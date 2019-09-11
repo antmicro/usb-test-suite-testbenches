@@ -41,10 +41,10 @@ WPWD=$(shell pwd)
 PYTHONPATH := $(PWD)/..:$(PYTHONPATH)
 endif
 
-VERILOG_SOURCES = $(WPWD)/dut.v $(WPWD)/tb.v $(WPWD)/../tinyfpga/common/*.v
+VERILOG_SOURCES = $(WPWD)/dut.v $(WPWD)/tb.v #$(WPWD)/../tinyfpga/common/*.v $(WPWD)/dummy.v
 TOPLEVEL = tb
-#MODULE = test-eptri
-MODULE = test-enum
+MODULE = test-eptri
+#MODULE = test-enum
 #MODULE = test-dummyusb
 
 CUSTOM_COMPILE_DEPS = $(PWD)/dut.v
@@ -52,18 +52,21 @@ CUSTOM_COMPILE_DEPS = $(PWD)/dut.v
 include $(shell cocotb-config --makefiles)/Makefile.inc
 include $(shell cocotb-config --makefiles)/Makefile.sim
 
-#$(PWD)/dut.v: generate_valentyusb.py
-#	cd ..
-#	PYTHONPATH=../litex:../migen:../litedram:../valentyusb:.. python3 generate_valentyusb.py eptri
-#	mv build/gateware/dut.v .
-
-$(PWD)/dut.v: generate_tinyfpgabl.py
+$(PWD)/dut.v: generate_valentyusb.py
 	cd ..
-	PYTHONPATH=../litex:../migen:../litedram:../tinyfpga:.. python3 generate_tinyfpgabl.py eptri
+	PYTHONPATH=../litex:../migen:../litedram:../valentyusb:.. python3 generate_valentyusb.py eptri
 	mv build/gateware/dut.v .
+
+#$(PWD)/dut.v: generate_tinyfpgabl.py
+#	cd ..
+#	PYTHONPATH=../litex:../migen:../litedram:../tinyfpga:../valentyusb:.. python3 generate_tinyfpgabl.py eptri
+#	mv build/gateware/dut.v .
 
 #$(PWD)/dut.v: generate_verilog.py ../valentyusb/usbcore/cpu/dummyusb.py
 #	cd ..
 #	PYTHONPATH=../../litex:../../migen:../../litedram:.. python3 generate_verilog.py dummy
 #	mv build/gateware/dut.v .
 #	mv build/gateware/*.init .
+#
+clean/dut: dut.v
+	rm dut.v
