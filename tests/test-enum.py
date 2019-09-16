@@ -58,6 +58,18 @@ def get_configuration_descriptor(harness):
         model.configDescriptor[1].get()[:9]
     )
 
+    # Since we got total length let's read the whole descriptor
+    config_descriptor_request = getDescriptorRequest(descriptor_type = Descriptor.Types.CONFIGURATION,
+            descriptor_index = 0,
+            lang_id = Descriptor.LangId.UNSPECIFIED,
+            length = model.configDescriptor[1].wTotalLength)
+
+    yield harness.control_transfer_in(
+        DEVICE_ADDRESS,
+        config_descriptor_request,
+        model.configDescriptor[1].get()
+    )
+
 @cocotb.coroutine
 def get_string_descriptor(harness):
     # Get LangId list
