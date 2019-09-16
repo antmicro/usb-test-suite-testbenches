@@ -4,13 +4,20 @@ from cocotb.triggers import RisingEdge, NullTrigger, Timer
 from cocotb.result import TestFailure, TestSuccess, ReturnValue
 
 from cocotb_usb.host_valenty import UsbTestValenty
+from cocotb_usb.device import UsbDevice
 from cocotb_usb.utils import grouper_tofit
 from cocotb_usb.usb.endpoint import *
 from cocotb_usb.usb.pid import *
 from cocotb_usb.usb.descriptors import *
 
+from os import environ
+
+descriptorFile = environ['TARGET_CONFIG']
+
 dut_csrs = 'csr.csv'
 DEVICE_ADDRESS = 20
+
+model = UsbDevice(descriptorFile)
 
 @cocotb.coroutine
 def get_device_descriptor(harness):
@@ -32,25 +39,10 @@ def get_device_descriptor(harness):
             lang_id = Descriptor.LangId.UNSPECIFIED,
             length = 10)
 
-    device_descriptor_response = DeviceDescriptor.build(bLength=18,
-            bDescriptorType=Descriptor.Types.DEVICE,
-            bcdUSB = 0x0200,
-            bDeviceClass = 0x00,
-            bDeviceSubClass = 0x00,
-            bDeviceProtocol = 0x00,
-            bMaxPacketSize0 = 0x40,
-            idVendor = 0x1d6b,
-            idProduct = 0x0105,
-            bcdDevice = 0x0100,
-            iManufacturer = 0x01,
-            iProduct = 0x02,
-            iSerialNumber = 0x03,
-            bNumConfigurations = 0x01)
-
     yield harness.control_transfer_in(
         DEVICE_ADDRESS,
         device_descriptor_request,
-        device_descriptor_response,
+        model.deviceDescriptor.get()
     )
 
 @cocotb.coroutine
@@ -60,18 +52,10 @@ def get_configuration_descriptor(harness):
             lang_id = Descriptor.LangId.UNSPECIFIED,
             length = 9)
 
-    config_descriptor_response = ConfigDescriptor.build(bLength = 9,
-            wTotalLength = 32,
-            bNumInterfaces = 1,
-            bConfigurationValue = 0x01,
-            iConfiguration = 0,
-            bmAttributes = ConfigDescriptor.Attributes.NONE,
-            bMaxPower = 50)
-
     yield harness.control_transfer_in(
         DEVICE_ADDRESS,
         config_descriptor_request,
-        config_descriptor_response,
+        model.configDescriptor[1].get()[:9]
     )
 
 @cocotb.coroutine
@@ -81,12 +65,11 @@ def get_string_descriptor(harness):
             descriptor_index = 0,
             lang_id = Descriptor.LangId.UNSPECIFIED,
             length = 255)
-    string_descriptor_response = StringDescriptor.buildIdx0(wLangIdList = [0x0409])
 
     yield harness.control_transfer_in(
         DEVICE_ADDRESS,
         string_descriptor_request,
-        string_descriptor_response,
+        model.stringDescriptorZero.get()
     )
 
     # Read a descriptor using received LangId
@@ -95,11 +78,10 @@ def get_string_descriptor(harness):
             lang_id = Descriptor.LangId.ENG,
             length = 255)
 
-    string_descriptor_response = StringDescriptor.build("Generic")
     yield harness.control_transfer_in(
         DEVICE_ADDRESS,
         string_descriptor_request,
-        string_descriptor_response,
+        model.stringDescriptor[Descriptor.LangId.ENG][0].get()
     )
 
 @cocotb.coroutine

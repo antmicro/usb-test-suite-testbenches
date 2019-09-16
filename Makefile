@@ -56,6 +56,8 @@ CUSTOM_COMPILE_DEPS = $(PWD)/dut.v
 include $(shell cocotb-config --makefiles)/Makefile.inc
 include $(shell cocotb-config --makefiles)/Makefile.sim
 
+export TARGET_CONFIG = configs/$(TARGET)_descriptors.json
+
 $(PWD)/dut.v: $(WRAPPER_SCRIPT)
 	cd ..
 	PYTHONPATH=../litex:../migen:../litedram:../valentyusb:.. python3 $(WRAPPER_SCRIPT) $(TARGET_OPTIONS)
