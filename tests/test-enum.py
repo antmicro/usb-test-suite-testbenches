@@ -3,7 +3,7 @@ from cocotb.clock import Clock
 from cocotb.triggers import RisingEdge, NullTrigger, Timer
 from cocotb.result import TestFailure, TestSuccess, ReturnValue
 
-from cocotb_usb.host_valenty import UsbTestValenty
+from cocotb_usb.host import UsbTestValenty
 from cocotb_usb.device import UsbDevice
 from cocotb_usb.utils import grouper_tofit
 from cocotb_usb.usb.endpoint import *
