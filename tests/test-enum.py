@@ -19,109 +19,36 @@ DEVICE_ADDRESS = 20
 
 model = UsbDevice(descriptorFile)
 
-@cocotb.coroutine
-def get_device_descriptor(harness):
-    # Device has no address set yet
-    DEVICE_ADDRESS_UNINITIALIZED = 0
-    yield harness.write(harness.csrs['usb_address'], DEVICE_ADDRESS_UNINITIALIZED)
-
-    # Set address (to 20)
-    yield harness.control_transfer_out(
-        DEVICE_ADDRESS_UNINITIALIZED,
-        setAddressRequest(DEVICE_ADDRESS),
-        None,
-    )
-
-    yield harness.write(harness.csrs['usb_address'], DEVICE_ADDRESS)
-
-    device_descriptor_request = getDescriptorRequest(descriptor_type = Descriptor.Types.DEVICE,
-            descriptor_index = 0,
-            lang_id = Descriptor.LangId.UNSPECIFIED,
-            length = 10)
-
-    yield harness.control_transfer_in(
-        DEVICE_ADDRESS,
-        device_descriptor_request,
-        model.deviceDescriptor.get()
-    )
-
-@cocotb.coroutine
-def get_configuration_descriptor(harness):
-    config_descriptor_request = getDescriptorRequest(descriptor_type = Descriptor.Types.CONFIGURATION,
-            descriptor_index = 0,
-            lang_id = Descriptor.LangId.UNSPECIFIED,
-            length = 9)
-
-    yield harness.control_transfer_in(
-        DEVICE_ADDRESS,
-        config_descriptor_request,
-        model.configDescriptor[1].get()[:9]
-    )
-
-    # Since we got total length let's read the whole descriptor
-    config_descriptor_request = getDescriptorRequest(descriptor_type = Descriptor.Types.CONFIGURATION,
-            descriptor_index = 0,
-            lang_id = Descriptor.LangId.UNSPECIFIED,
-            length = model.configDescriptor[1].wTotalLength)
-
-    yield harness.control_transfer_in(
-        DEVICE_ADDRESS,
-        config_descriptor_request,
-        model.configDescriptor[1].get()
-    )
-
-@cocotb.coroutine
-def get_string_descriptor(harness):
-    # Get LangId list
-    string_descriptor_request = getDescriptorRequest(descriptor_type = Descriptor.Types.STRING,
-            descriptor_index = 0,
-            lang_id = Descriptor.LangId.UNSPECIFIED,
-            length = 255)
-
-    yield harness.control_transfer_in(
-        DEVICE_ADDRESS,
-        string_descriptor_request,
-        model.stringDescriptorZero.get()
-    )
-
-    # Read a descriptor using received LangId
-    string_descriptor_request = getDescriptorRequest(descriptor_type = Descriptor.Types.STRING,
-            descriptor_index = 1,
-            lang_id = Descriptor.LangId.ENG,
-            length = 255)
-
-    yield harness.control_transfer_in(
-        DEVICE_ADDRESS,
-        string_descriptor_request,
-        model.stringDescriptor[Descriptor.LangId.ENG][0].get()
-    )
-
-@cocotb.coroutine
-def set_configuration(harness):
-    # Set configuration
-    request = setConfigurationRequest(1)
-
-    yield harness.control_transfer_out(
-        DEVICE_ADDRESS,
-        request,
-        None,
-    )
-    # Device should now be in "Configured" state
-    pass
-
 @cocotb.test()
 def test_enumeration(dut):
     harness = UsbTestValenty(dut, dut_csrs)
     yield harness.reset()
     yield harness.connect()
 
-    yield harness.clear_pending(EndpointType.epaddr(0, EndpointType.OUT))
-    yield harness.clear_pending(EndpointType.epaddr(0, EndpointType.IN))
+    yield harness.get_device_descriptor(response=model.deviceDescriptor.get())
 
-    yield get_device_descriptor(harness)
-    yield get_configuration_descriptor(harness)
-    yield get_string_descriptor(harness)
-    #TODO: Set configuration
-    yield set_configuration(harness)
+    yield harness.set_device_address(DEVICE_ADDRESS)
+    yield harness.get_configuration_descriptor(length=9,
+            # Device must implement at least one configuration
+            response=model.configDescriptor[1].get()[:9]
+            )
+
+    total_config_len = model.configDescriptor[1].wTotalLength
+    yield harness.get_configuration_descriptor(length=total_config_len,
+            response=model.configDescriptor[1].get()[:total_config_len])
+
+    yield harness.get_string_descriptor(lang_id=Descriptor.LangId.UNSPECIFIED,
+            idx=0,
+            response=model.stringDescriptorZero.get())
+
+    if model.stringDescriptorZero.wLangId:
+        # If the device implements string descriptors, let's try reading them
+        lang_id=model.stringDescriptorZero.wLangId[0]
+        yield harness.get_string_descriptor(lang_id=lang_id,
+                idx=0,
+                response=model.stringDescriptor[lang_id][0].get())
+
+    yield harness.set_configuration(1)
+    # Device should now be in "Configured" state
     #TODO: Class-specific config
 
