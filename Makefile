@@ -30,7 +30,7 @@
 # Default to verilog
 TOPLEVEL_LANG ?= verilog
 
-TEST_SCRIPT= test-eptri
+TEST_SCRIPT= test-enum
 TARGET = valentyusb
 TARGET_OPTIONS = "eptri"
 
@@ -45,7 +45,7 @@ WPWD=$(shell pwd)
 PYTHONPATH := $(PWD)/..:$(PYTHONPATH)
 endif
 
-VERILOG_SOURCES = $(WPWD)/dut.v $(WPWD)/tb.v
+VERILOG_SOURCES = $(WPWD)/dut.v $(WPWD)/wrappers/tb_$(TARGET).v
 TOPLEVEL = tb
 
 WRAPPER_SCRIPT = wrappers/generate_$(TARGET).py
