@@ -23,6 +23,9 @@ module tb(
 	output wishbone_err
 );
 
+pulldown(usb_d_n);
+pulldown(usb_d_p);
+
 dut dut (
 	.clk_clk48(clk48_device),
 	.clk_clk12(clk12),
