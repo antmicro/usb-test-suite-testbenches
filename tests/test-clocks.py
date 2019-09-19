@@ -30,7 +30,7 @@ def test_drift(dut):
     device_clock = Clock(dut.clk48_device, 20830+6, 'ps')
     cocotb.fork(device_clock.start())
 
-    harness = UsbTestValenty(dut, DUT_CSRS)
+    harness = UsbTestValenty(dut, DUT_CSRS, decouple_clocks=True)
 
     yield harness.reset()
     yield harness.connect()
@@ -42,7 +42,7 @@ def test_jitter(dut):
     device_clock = UnstableClock(dut.clk48_device, 20830, 3500, 3500, 'ps')
     cocotb.fork(device_clock.start())
 
-    harness = UsbTestValenty(dut, DUT_CSRS)
+    harness = UsbTestValenty(dut, DUT_CSRS, decouple_clocks=True)
 
     yield harness.reset()
     yield harness.connect()
