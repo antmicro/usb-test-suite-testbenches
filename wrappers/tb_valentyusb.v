@@ -1,4 +1,4 @@
-`timescale 100ps / 100ps
+`timescale 100ps / 1ps
 
 module tb(
 	input clk48_host,
@@ -20,9 +20,11 @@ module tb(
 	input [2:0] wishbone_cti,
 	input [1:0] wishbone_bte,
 	input [4095:0] test_name,
-	output wishbone_err
+	output wishbone_err,
+	output clkdiff
 );
 
+assign clkdiff = clk48_host ^ clk48_device;
 pulldown(usb_d_n);
 pulldown(usb_d_p);
 
