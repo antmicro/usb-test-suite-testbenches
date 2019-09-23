@@ -51,8 +51,8 @@ dut dut (
 
   // Dump waves
   initial begin
-    $dumpfile("dump.vcd");
-    $dumpvars(0, tb);
+    $dumpfile("usb.vcd");
+    $dumpvars(0, usb_d_p, usb_d_n);
   end
 
 endmodule

@@ -63,5 +63,11 @@ $(PWD)/dut.v: $(WRAPPER_SCRIPT)
 	PYTHONPATH=../litex:../migen:../litedram:../valentyusb:.. python3 $(WRAPPER_SCRIPT) $(TARGET_OPTIONS)
 	mv build/gateware/dut.v .
 
+$(PWD)/usb.pcap: usb.vcd
+	sigrok-cli -i usb.vcd -P 'usb_signalling:signalling=full-speed:dm=usb_d_n:dp=usb_d_p,usb_packet,usb_request' -l 4 -B usb_request=pcap > usb.pcap
+
+decode: $(PWD)/usb.pcap
+	wireshark $(PWD)/usb.pcap
+
 clean/dut: dut.v
 	rm dut.v
