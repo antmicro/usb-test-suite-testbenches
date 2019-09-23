@@ -45,7 +45,7 @@ def test_enumeration(dut):
         # If the device implements string descriptors, let's try reading them
         lang_id=model.stringDescriptorZero.wLangId[0]
         yield harness.get_string_descriptor(lang_id=lang_id,
-                idx=0,
+                idx=1,
                 response=model.stringDescriptor[lang_id][0].get())
 
     yield harness.set_configuration(1)
