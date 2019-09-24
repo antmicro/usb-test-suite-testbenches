@@ -45,7 +45,7 @@ WPWD=$(shell pwd)
 PYTHONPATH := $(PWD)/..:$(PYTHONPATH)
 endif
 
-VERILOG_SOURCES = $(WPWD)/dut.v $(WPWD)/wrappers/tb_$(TARGET).v
+VERILOG_SOURCES = $(WPWD)/dut.v $(WPWD)/tb.v
 TOPLEVEL = tb
 
 WRAPPER_SCRIPT = wrappers/generate_$(TARGET).py
@@ -58,16 +58,21 @@ include $(shell cocotb-config --makefiles)/Makefile.sim
 
 export TARGET_CONFIG = configs/$(TARGET)_descriptors.json
 
-$(PWD)/dut.v: $(WRAPPER_SCRIPT)
+$(PWD)/dut.v: $(WRAPPER_SCRIPT) $(WPWD)/wrappers/tb_$(TARGET).v
+	cp $(WPWD)/wrappers/tb_$(TARGET).v ./tb.v
 	cd ..
 	PYTHONPATH=../litex:../migen:../litedram:../valentyusb:.. python3 $(WRAPPER_SCRIPT) $(TARGET_OPTIONS)
 	mv build/gateware/dut.v .
 
-$(PWD)/usb.pcap: usb.vcd
+$(PWD)/usb.vcd: $(PWD)/dut.v
+	sed -i "s/dump.vcd/usb.vcd/g" tb.v
+	sed -i "s/0, tb/0, usb_d_p, usb_d_n/g" tb.v
+	make sim
+
+$(PWD)/usb.pcap: $(PWD)/usb.vcd
 	sigrok-cli -i usb.vcd -P 'usb_signalling:signalling=full-speed:dm=usb_d_n:dp=usb_d_p,usb_packet,usb_request' -l 4 -B usb_request=pcap > usb.pcap
 
 decode: $(PWD)/usb.pcap
-	wireshark $(PWD)/usb.pcap
 
 clean/dut: dut.v
 	rm dut.v
