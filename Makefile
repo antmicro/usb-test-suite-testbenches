@@ -58,8 +58,10 @@ include $(shell cocotb-config --makefiles)/Makefile.sim
 
 export TARGET_CONFIG = configs/$(TARGET)_descriptors.json
 
-$(PWD)/dut.v: $(WRAPPER_SCRIPT) $(WPWD)/wrappers/tb_$(TARGET).v
+$(PWD)/tb.v: $(WPWD)/wrappers/tb_$(TARGET).v
 	cp $(WPWD)/wrappers/tb_$(TARGET).v ./tb.v
+
+$(PWD)/dut.v: $(WRAPPER_SCRIPT) $(WPWD)/tb.v
 	cd ..
 	PYTHONPATH=../litex:../migen:../litedram:../valentyusb:.. python3 $(WRAPPER_SCRIPT) $(TARGET_OPTIONS)
 	mv build/gateware/dut.v .
@@ -76,3 +78,6 @@ decode: $(PWD)/usb.pcap
 
 clean/dut: dut.v
 	rm dut.v
+
+clean/decode:
+	rm usb.vcd usb.pcap tb.v
