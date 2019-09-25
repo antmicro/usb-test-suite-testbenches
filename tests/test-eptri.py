@@ -4,17 +4,15 @@ from cocotb.clock import Clock
 from cocotb.triggers import RisingEdge, NullTrigger, Timer
 from cocotb.result import TestFailure, TestSuccess, ReturnValue
 
-from cocotb_usb.host import UsbTestValenty
+from cocotb_usb.harness import get_harness
 from cocotb_usb.utils import grouper_tofit
 from cocotb_usb.usb.endpoint import *
 from cocotb_usb.usb.pid import *
 
-dut_csrs = 'csr.csv'
-
 @cocotb.test()
 def iobuf_validate(dut):
     """Sanity test that the Wishbone bus actually works"""
-    harness = UsbTestValenty(dut, dut_csrs)
+    harness = get_harness(dut)
     yield harness.reset()
 
     USB_PULLUP_OUT = harness.csrs['usb_pullup_out']
@@ -33,7 +31,7 @@ def iobuf_validate(dut):
 
 @cocotb.test()
 def test_control_setup(dut):
-    harness = UsbTestValenty(dut, dut_csrs)
+    harness = get_harness(dut)
     yield harness.reset()
     yield harness.connect()
     # We write to address 0, because we just want to test that the control
@@ -44,7 +42,7 @@ def test_control_setup(dut):
 
 @cocotb.test()
 def test_control_transfer_in(dut):
-    harness = UsbTestValenty(dut, dut_csrs)
+    harness = get_harness(dut)
     yield harness.reset()
 
     yield harness.connect()
@@ -64,7 +62,7 @@ def test_control_transfer_in_lazy(dut):
     epaddr_out = EndpointType.epaddr(0, EndpointType.OUT)
     epaddr_in = EndpointType.epaddr(0, EndpointType.IN)
 
-    harness = UsbTestValenty(dut, dut_csrs)
+    harness = get_harness(dut)
     yield harness.reset()
 
     yield harness.connect()
@@ -162,7 +160,7 @@ def test_control_transfer_in_large(dut):
     epaddr_out = EndpointType.epaddr(0, EndpointType.OUT)
     epaddr_in = EndpointType.epaddr(0, EndpointType.IN)
 
-    harness = UsbTestValenty(dut, dut_csrs)
+    harness = get_harness(dut)
     yield harness.reset()
 
     yield harness.connect()
@@ -236,7 +234,7 @@ def test_control_transfer_in_large(dut):
 
 @cocotb.test()
 def test_sof_stuffing(dut):
-    harness = UsbTestValenty(dut, dut_csrs)
+    harness = get_harness(dut)
     yield harness.reset()
 
     yield harness.connect()
@@ -247,7 +245,7 @@ def test_sof_stuffing(dut):
 
 @cocotb.test()
 def test_sof_is_ignored(dut):
-    harness = UsbTestValenty(dut, dut_csrs)
+    harness = get_harness(dut)
     yield harness.reset()
     yield harness.connect()
 
@@ -293,7 +291,7 @@ def test_sof_is_ignored(dut):
 
 @cocotb.test()
 def test_control_setup_clears_stall(dut):
-    harness = UsbTestValenty(dut, dut_csrs)
+    harness = get_harness(dut)
     yield harness.reset()
     yield harness.connect()
 
@@ -328,7 +326,7 @@ def test_control_setup_clears_stall(dut):
 
 @cocotb.test()
 def test_control_transfer_in_nak_data(dut):
-    harness = UsbTestValenty(dut, dut_csrs)
+    harness = get_harness(dut)
     yield harness.reset()
     yield harness.connect()
 
@@ -361,7 +359,7 @@ def test_control_transfer_in_nak_data(dut):
 
 # @cocotb.test()
 # def test_control_transfer_in_nak_status(dut):
-#     harness = UsbTestValenty(dut, dut_csrs)
+#     harness = get_harness(dut)
 #     yield harness.reset()
 #     yield harness.connect()
 
@@ -402,7 +400,7 @@ def test_control_transfer_in_nak_data(dut):
 
 @cocotb.test()
 def test_control_transfer_in(dut):
-    harness = UsbTestValenty(dut, dut_csrs)
+    harness = get_harness(dut)
     yield harness.reset()
     yield harness.connect()
 
@@ -422,7 +420,7 @@ def test_control_transfer_in(dut):
 
 @cocotb.test()
 def test_control_transfer_in_out(dut):
-    harness = UsbTestValenty(dut, dut_csrs)
+    harness = get_harness(dut)
     yield harness.reset()
     yield harness.connect()
 
@@ -452,7 +450,7 @@ def test_control_transfer_in_out(dut):
 @cocotb.test()
 def test_control_transfer_in_out_in(dut):
     """This transaction is pretty much the first thing any OS will do"""
-    harness = UsbTestValenty(dut, dut_csrs)
+    harness = get_harness(dut)
     yield harness.reset()
     yield harness.connect()
 
@@ -492,7 +490,7 @@ def test_control_transfer_in_out_in(dut):
 
 @cocotb.test()
 def test_control_transfer_out_in(dut):
-    harness = UsbTestValenty(dut, dut_csrs)
+    harness = get_harness(dut)
     yield harness.reset()
     yield harness.connect()
 
@@ -522,7 +520,7 @@ def test_control_transfer_out_in(dut):
 
 # @cocotb.test()
 # def test_control_transfer_out_nak_data(dut):
-#     harness = UsbTestValenty(dut, dut_csrs)
+#     harness = get_harness(dut)
 #     yield harness.reset()
 #     yield harness.connect()
 
@@ -563,7 +561,7 @@ def test_control_transfer_out_in(dut):
 
 @cocotb.test()
 def test_in_transfer(dut):
-    harness = UsbTestValenty(dut, dut_csrs)
+    harness = get_harness(dut)
     yield harness.reset()
     yield harness.connect()
 
@@ -595,7 +593,7 @@ def test_in_transfer(dut):
 
 @cocotb.test()
 def test_in_transfer_stuff_last(dut):
-    harness = UsbTestValenty(dut, dut_csrs)
+    harness = get_harness(dut)
     yield harness.reset()
     yield harness.connect()
 
@@ -615,7 +613,7 @@ def test_in_transfer_stuff_last(dut):
 
 @cocotb.test()
 def test_debug_in(dut):
-    harness = UsbTestValenty(dut, dut_csrs)
+    harness = get_harness(dut)
     yield harness.reset()
     yield harness.connect()
 
@@ -653,7 +651,7 @@ def test_debug_in(dut):
 
 # @cocotb.test()
 # def test_debug_in_missing_ack(dut):
-#     harness = UsbTestValenty(dut, dut_csrs)
+#     harness = get_harness(dut)
 #     yield harness.reset()
 #     yield harness.connect()
 
@@ -688,7 +686,7 @@ def test_debug_in(dut):
 
 @cocotb.test()
 def test_debug_out(dut):
-    harness = UsbTestValenty(dut, dut_csrs)
+    harness = get_harness(dut)
     yield harness.reset()
     yield harness.connect()
 

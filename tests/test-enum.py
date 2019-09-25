@@ -3,25 +3,22 @@ from cocotb.clock import Clock
 from cocotb.triggers import RisingEdge, NullTrigger, Timer
 from cocotb.result import TestFailure, TestSuccess, ReturnValue
 
-from cocotb_usb.host import UsbTestValenty
+from cocotb_usb.harness import get_harness
 from cocotb_usb.device import UsbDevice
 from cocotb_usb.utils import grouper_tofit
-from cocotb_usb.usb.endpoint import *
-from cocotb_usb.usb.pid import *
-from cocotb_usb.usb.descriptors import *
+from cocotb_usb.usb.descriptors import Descriptor
 
 from os import environ
 
 descriptorFile = environ['TARGET_CONFIG']
 
-dut_csrs = 'csr.csv'
 DEVICE_ADDRESS = 20
 
 model = UsbDevice(descriptorFile)
 
 @cocotb.test()
 def test_enumeration(dut):
-    harness = UsbTestValenty(dut, dut_csrs)
+    harness = get_harness(dut)
     yield harness.reset()
     yield harness.connect()
 

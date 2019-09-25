@@ -1,0 +1,2 @@
+TARGET_OPTIONS = "eptri"
+export DUT_CSRS = csr.csv

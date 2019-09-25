@@ -3,13 +3,11 @@ from os import environ
 import cocotb
 from cocotb.clock import Clock
 
-from cocotb_usb.host import UsbTestValenty
+from cocotb_usb.harness import get_harness
 from cocotb_usb.device import UsbDevice
 from cocotb_usb.clocks import UnstableClock
 
 DESCRIPTOR_FILE = environ['TARGET_CONFIG']
-
-DUT_CSRS = 'csr.csv'
 
 model = UsbDevice(DESCRIPTOR_FILE)
 
@@ -18,7 +16,7 @@ def test_accurate(dut):
     device_clock = Clock(dut.clk48_device, 20830, 'ps')
     cocotb.fork(device_clock.start())
 
-    harness = UsbTestValenty(dut, DUT_CSRS)
+    harness = get_harness(dut)
 
     yield harness.reset()
     yield harness.connect()
@@ -30,7 +28,7 @@ def test_drift(dut):
     device_clock = Clock(dut.clk48_device, 20830+6, 'ps')
     cocotb.fork(device_clock.start())
 
-    harness = UsbTestValenty(dut, DUT_CSRS, decouple_clocks=True)
+    harness = get_harness(dut, decouple_clocks=True)
 
     yield harness.reset()
     yield harness.connect()
@@ -42,7 +40,7 @@ def test_jitter(dut):
     device_clock = UnstableClock(dut.clk48_device, 20830, 3500, 3500, 'ps')
     cocotb.fork(device_clock.start())
 
-    harness = UsbTestValenty(dut, DUT_CSRS, decouple_clocks=True)
+    harness = get_harness(dut, decouple_clocks=True)
 
     yield harness.reset()
     yield harness.connect()
