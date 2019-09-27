@@ -105,25 +105,31 @@ class BaseSoC(SoCCore):
 
         # Assign signals to triple
         self.comb += [
-            If(usb_tx_en,
+            If(~usb_tx_en_dut,
                 usb_p_rx.eq(0b1),
                 usb_n_rx.eq(0b0),
             ).Else(
                 usb_p_rx.eq(usb_p_t.i),
                 usb_n_rx.eq(usb_n_t.i),
             ),
-            usb_p_t.oe.eq(usb_tx_en),
-            usb_n_t.oe.eq(usb_tx_en),
+            usb_p_t.oe.eq(~usb_tx_en_dut),
+            usb_n_t.oe.eq(~usb_tx_en_dut),
             usb_p_t.o.eq(usb_p_tx),
             usb_n_t.o.eq(usb_n_tx),
         ]
 
         self.comb += usb_tx_en.eq(~usb_tx_en_dut)
+        # Delay USB_TX_EN line
+        for i in range(4):
+            tx_en_tmp = Signal()
+            self.sync.sys += tx_en_tmp.eq(usb_tx_en)
+            usb_tx_en= tx_en_tmp
+
         self.comb += usb_reset.eq(~self.crg.cd_sys.rst)
         # Assign pads to triple
         self.specials += usb_p_t.get_tristate(usb_pads.d_p)
         self.specials += usb_n_t.get_tristate(usb_pads.d_n)
-        self.comb += usb_pads.tx_en.eq(~usb_tx_en)
+        self.comb += usb_pads.tx_en.eq(usb_tx_en & ~usb_tx_en_dut)
 
         platform.add_source("../usb1_device/rtl/verilog/usb1_core.v")
         self.specials += Instance("usb1_core",

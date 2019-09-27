@@ -1,66 +1,102 @@
 {
-  "_comment": "ValentyUSB",
+  "_comment": "usb1_device",
   "Device": {
     "bLength":                18,
     "bDescriptorType":         1,
-    "bcdUSB":           "0x0200",
-    "bDeviceClass":            0,
+    "bcdUSB":           "0x0100",
+    "bDeviceClass":          255,
     "bDeviceSubClass":         0,
-    "bDeviceProtocol":         0,
+    "bDeviceProtocol":       255,
     "bMaxPacketSize0":        64,
-    "idVendor":         "0x1d6b",
-    "idProduct":        "0x0105",
-    "bcdDevice":        "0x0100",
-    "iManufacturer":           1,
-    "iProduct":                2,
-    "iSerial":                 3,
+    "idVendor":         "0x1234",
+    "idProduct":        "0x5678",
+    "bcdDevice":        "0x0010",
+    "iManufacturer":           0,
+    "iProduct":                0,
+    "iSerial":                 0,
     "bNumConfigurations":      1
    },
   "Configuration": {
     "1": {
       "bLength":                 9,
       "bDescriptorType":         2,
-      "wTotalLength":           32,
+      "wTotalLength":           53,
       "bNumInterfaces":          1,
       "bConfigurationValue":     1,
       "iConfiguration":          0,
-      "bmAttributes":       "0x80",
-      "bMaxPower":              50,
+      "bmAttributes":       "0x40",
+      "bMaxPower":               0,
       "Interface": [
         {
           "bLength":                 9,
           "bDescriptorType":         4,
           "bInterfaceNumber":        0,
           "bAlternateSetting":       0,
-          "bNumEndpoints":           2,
-          "bInterfaceClass":         8,
-          "bInterfaceSubClass":      6,
-          "bInterfaceProtocol":     80,
+          "bNumEndpoints":           5,
+          "bInterfaceClass":         255,
+          "bInterfaceSubClass":      1,
+          "bInterfaceProtocol":     255,
           "iInterface":              0,
           "Endpoint": [
             {
               "bLength":                 7,
               "bDescriptorType":         5,
-              "bEndpointAddress":     [1, "OUT"],
+              "bEndpointAddress":     [1, "IN"],
               "bmAttributes": {
-                "Transfer": "Bulk",
+                "Transfer": "Isochronous",
                 "Synch": "None",
                 "Usage": "Data"
               },
-              "wMaxPacketSize":     "0x0200",
-              "bInterval":               0
+              "wMaxPacketSize":     "0x0100",
+              "bInterval":               1
             },
             {
               "bLength":                 7,
               "bDescriptorType":         5,
-              "bEndpointAddress":     [2, "IN"],
+              "bEndpointAddress":     [2, "OUT"],
+              "bmAttributes": {
+                "Transfer": "Isochronous",
+                "Synch": "None",
+                "Usage": "Data"
+              },
+              "wMaxPacketSize":     "0x0100",
+              "bInterval":               1
+            },
+            {
+              "bLength":                 7,
+              "bDescriptorType":         5,
+              "bEndpointAddress":     [3, "IN"],
               "bmAttributes": {
                 "Transfer": "Bulk",
                 "Synch": "None",
                 "Usage": "Data"
               },
-              "wMaxPacketSize":     "0x0200",
-              "bInterval":               0
+              "wMaxPacketSize":     "0x0040",
+              "bInterval":               1
+            },
+            {
+              "bLength":                 7,
+              "bDescriptorType":         5,
+              "bEndpointAddress":     [4, "OUT"],
+              "bmAttributes": {
+                "Transfer": "Bulk",
+                "Synch": "None",
+                "Usage": "Data"
+              },
+              "wMaxPacketSize":     "0x0040",
+              "bInterval":               1
+            },
+            {
+              "bLength":                 7,
+              "bDescriptorType":         5,
+              "bEndpointAddress":     [5, "IN"],
+              "bmAttributes": {
+                "Transfer": "Interrupt",
+                "Synch": "None",
+                "Usage": "Data"
+              },
+              "wMaxPacketSize":     "0x0040",
+              "bInterval":               1
             }
           ]
         }
@@ -71,9 +107,7 @@
     ["0x0409"],
     {
       "0x0409" : [
-        "Generic",
-        "IpCore",
-        "1234567890"
+        "0 gn"
       ]
     }
   ],

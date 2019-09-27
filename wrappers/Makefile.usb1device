@@ -1,1 +1,3 @@
-VERILOG_SOURCES += $(WPWD)/../usb1_device/rtl/verilog/*.v $(WPWD)/usb1_defines.v $(WPWD)/timescale.v
+VERILOG_SOURCES += $(WPWD)/../usb1_device/rtl/verilog/*.v
+
+COMPILE_ARGS += -I $(WPWD)/../usb1_device/rtl/verilog/
