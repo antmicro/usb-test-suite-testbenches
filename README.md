@@ -25,7 +25,7 @@ Test output is saved to `results.xml` file. Signal states are stored in `dump.vc
 
 Basic options that can be set:
 * `TEST_SCRIPT` - name of script from the *tests* directory to be executed, without `.py` extension.
-* `TARGET` - IP core to be tested. Currently only `valentyusb` is supported.
+* `TARGET` - IP core to be tested. Currently `valentyusb` and `usb1device` are supported.
 * `TARGET_OPTIONS` - if some can be used in the wrapper script.
 
 Other makefile targets:
