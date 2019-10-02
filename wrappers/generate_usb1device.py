@@ -4,25 +4,17 @@
 # Disable pylint's E1101, which breaks completely on migen
 #pylint:disable=E1101
 
-from migen import Module, Signal, Instance, ClockDomain, If
-from migen.genlib.resetsync import AsyncResetSynchronizer
-from migen.fhdl.specials import TSTriple
-from migen.fhdl.bitcontainer import bits_for
-from migen.fhdl.structure import ClockSignal, ResetSignal, Replicate, Cat
-from migen.genlib.cdc import MultiReg
+import argparse
 
-from litex.build.generic_platform import Pins, IOStandard, Misc, Subsignal
+from migen import Module, Signal, Instance, ClockDomain, If
+from migen.fhdl.specials import TSTriple
+from migen.fhdl.structure import ResetSignal
+
+from litex.build.generic_platform import Pins, Subsignal
+from litex.build.sim.platform import SimPlatform
 from litex.soc.integration import SoCCore
 from litex.soc.integration.builder import Builder
-from litex.soc.integration.soc_core import csr_map_update
-from litex.soc.interconnect import wishbone
-from litex.soc.interconnect.csr import AutoCSR, CSRStatus, CSRStorage
 
-import argparse
-import os
-
-from litex.build.generic_platform import Pins, IOStandard, Misc, Subsignal
-from litex.build.sim.platform import SimPlatform
 
 _io = [
     ("usb", 0,
@@ -129,6 +121,7 @@ class BaseSoC(SoCCore):
         # Assign pads to triple
         self.specials += usb_p_t.get_tristate(usb_pads.d_p)
         self.specials += usb_n_t.get_tristate(usb_pads.d_n)
+        # Deasserting tx_en should not be delayed
         self.comb += usb_pads.tx_en.eq(usb_tx_en & ~usb_tx_en_dut)
 
         platform.add_source("../usb1_device/rtl/verilog/usb1_core.v")

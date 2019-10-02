@@ -1,3 +1,2 @@
 VERILOG_SOURCES += $(WPWD)/../usb1_device/rtl/verilog/*.v
-
 COMPILE_ARGS += -I $(WPWD)/../usb1_device/rtl/verilog/
