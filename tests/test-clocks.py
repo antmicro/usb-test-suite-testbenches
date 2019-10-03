@@ -11,6 +11,7 @@ DESCRIPTOR_FILE = environ['TARGET_CONFIG']
 
 model = UsbDevice(DESCRIPTOR_FILE)
 
+
 @cocotb.test()
 def test_accurate(dut):
     device_clock = Clock(dut.clk48_device, 20830, 'ps')
@@ -23,9 +24,10 @@ def test_accurate(dut):
 
     yield harness.get_device_descriptor(model.deviceDescriptor.get())
 
+
 @cocotb.test()
 def test_drift(dut):
-    device_clock = Clock(dut.clk48_device, 20830+6, 'ps')
+    device_clock = Clock(dut.clk48_device, 20830 + 6, 'ps')
     cocotb.fork(device_clock.start())
 
     harness = get_harness(dut, decouple_clocks=True)
@@ -34,6 +36,7 @@ def test_drift(dut):
     yield harness.connect()
 
     yield harness.get_device_descriptor(model.deviceDescriptor.get())
+
 
 @cocotb.test()
 def test_jitter(dut):
