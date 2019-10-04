@@ -6,14 +6,13 @@ This repository contains test and wrapper scripts for USB IP cores implemented u
 You can use [parent repository](https://github.com/antmicro/usb-test-suite-build) to ensure correct folder structure is maintained.
 
 ### Prerequisites
-* Migen
-* LiteX
-* LiteDRAM
+* [Migen](https://github.com/m-labs/migen)
+* [LiteX](https://github.com/enjoy-digital/litex)
 
-* iverilog
+* [iverilog](http://iverilog.icarus.com/)
 * python3 and pip
-* cocotb
-* cocotb_usb package
+* [cocotb](https://github.com/cocotb/cocotb)
+* [cocotb_usb](https://github.com/antmicro/usb-test-suite-cocotb-usb) package
 
 ## Usage
 Execution is controlled by Makefile. To execute tests with default values, use:
