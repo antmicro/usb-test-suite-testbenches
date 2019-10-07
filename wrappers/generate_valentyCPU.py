@@ -9,6 +9,7 @@ from litex.soc.integration import SoCCore
 from litex.soc.integration.builder import Builder, builder_args
 from litex.soc.integration.soc_core import (soc_core_argdict, soc_core_args,
                                             get_mem_data)
+from litex.soc.interconnect import wishbone
 
 from valentyusb.usbcore import io as usbio
 from valentyusb.usbcore.cpu import dummyusb, eptri, epfifo
@@ -79,6 +80,14 @@ class _CRG(Module):
         ]
 
 
+class FirmwareROM(wishbone.SRAM):
+    def __init__(self, size, filename):
+        data = []
+        with open(filename, 'rb') as inp:
+            data = inp.read()
+        wishbone.SRAM.__init__(self, size, read_only=True, init=data)
+
+
 class Platform(SimPlatform):
     def __init__(self, toolchain="verilator"):
         SimPlatform.__init__(self,
@@ -126,16 +135,20 @@ class BaseSoC(SoCCore):
         self.submodules.crg = _CRG(platform)
         output_dir = kwargs.get("output_dir", "build")
         usb_variant = kwargs.get("variant", "eptri")
+        bios_file = kwargs.get("bios_file", "foboot.bin")
+        kwargs['cpu_reset_address'] = 0
 
         self.output_dir = output_dir
 
         SoCCore.__init__(self,
                          platform,
                          clk_freq=clk_freq,
-                         integrated_rom_size=0x4000,
-                         integrated_sram_size=0x4000,
-                         integrated_main_ram_size=0x10000,
+                         integrated_sram_size=0x8000,
                          **kwargs)
+        bios_size = 0x8000
+        self.submodules.firmware_rom = FirmwareROM(bios_size, bios_file)
+        self.add_constant("ROM_DISABLE", 1)
+        self.register_rom(self.firmware_rom.bus, bios_size)
         # Add USB pads
         usb_pads = platform.request("usb")
         usb_iobuf = usbio.IoBuf(usb_pads.d_p, usb_pads.d_n, usb_pads.pullup)
@@ -251,6 +264,10 @@ def main():
                         metavar='CSR',
                         default='csr.csv',
                         help='csr file (default: %(default)s)')
+    parser.add_argument(
+        "--bios_file",
+        help="use specified file as a BIOS, rather than building one"
+    )
     parser.add_argument("--ram-init", default=None, help="ram_init file")
     args = parser.parse_args()
 
@@ -264,11 +281,10 @@ def main():
 
     platform = Platform()
     soc = BaseSoC(platform, **soc_kwargs)
-    # builder = Builder(soc, **builder_argdict(args))
     builder = Builder(soc,
                       output_dir=args.dir,
                       csr_csv=args.csr,
-                      compile_software=True)
+                      compile_software=False)
     vns = builder.build(run=False)
     soc.do_exit(vns)
 

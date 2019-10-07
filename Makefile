@@ -64,7 +64,7 @@ $(PWD)/tb.v: $(WPWD)/wrappers/tb_$(TARGET).v
 
 $(PWD)/dut.v: $(WRAPPER_SCRIPT) $(WPWD)/tb.v
 	cd ..
-	PYTHONPATH=../litex:../migen:../litedram:../valentyusb:.. python3 $(WRAPPER_SCRIPT) $(TARGET_OPTIONS)
+	PYTHONPATH=../litex:../litex/litex:../migen:../valentyusb:.. python3 $(WRAPPER_SCRIPT) $(TARGET_OPTIONS)
 	mv build/gateware/dut.v .
 
 $(PWD)/usb.vcd: $(PWD)/dut.v
