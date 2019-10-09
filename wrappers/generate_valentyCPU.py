@@ -15,6 +15,7 @@ from valentyusb.usbcore import io as usbio
 from valentyusb.usbcore.cpu import dummyusb, eptri, epfifo
 
 import argparse
+import os
 
 _io = [
     # Wishbone
@@ -134,9 +135,8 @@ class BaseSoC(SoCCore):
         clk_freq = int(12e6)
         self.submodules.crg = _CRG(platform)
         output_dir = kwargs.get("output_dir", "build")
-        usb_variant = kwargs.get("variant", "eptri")
-        bios_file = kwargs.get("bios_file", "foboot.bin")
-        kwargs['cpu_reset_address'] = 0
+        usb_variant = kwargs.get("variant", "epfifo")
+        kwargs['cpu_reset_address'] = 0x0
 
         self.output_dir = output_dir
 
@@ -145,10 +145,9 @@ class BaseSoC(SoCCore):
                          clk_freq=clk_freq,
                          integrated_sram_size=0x8000,
                          **kwargs)
-        bios_size = 0x8000
-        self.submodules.firmware_rom = FirmwareROM(bios_size, bios_file)
-        self.add_constant("ROM_DISABLE", 1)
-        self.register_rom(self.firmware_rom.bus, bios_size)
+        self.integrated_rom_size = bios_size = 0x8000
+        self.submodules.rom = wishbone.SRAM(bios_size, read_only=True, init=[])
+        self.register_rom(self.rom.bus, bios_size)
         # Add USB pads
         usb_pads = platform.request("usb")
         usb_iobuf = usbio.IoBuf(usb_pads.d_p, usb_pads.d_n, usb_pads.pullup)
@@ -168,6 +167,10 @@ class BaseSoC(SoCCore):
             )
         self.add_wb_master(self.usb.debug_bridge.wishbone)
 
+        flash_size = 0x20000000
+        self.submodules.spi = wishbone.SRAM(flash_size, read_only=False, init=[])
+        self.register_mem("spiflash", self.mem_map["spiflash"],
+            self.spi.bus, size=flash_size)
         class _WishboneBridge(Module):
             def __init__(self, interface):
                 self.wishbone = interface
@@ -175,7 +178,6 @@ class BaseSoC(SoCCore):
         self.submodules.wishbone = _WishboneBridge(
             self.platform.request("wishbone"))
         # self.add_wb_master(self.wishbone)
-
 
 def add_fsm_state_names():
     """Hack the FSM module to add state names to the output"""
@@ -274,7 +276,7 @@ def main():
     soc_kwargs = soc_core_argdict(args)
     if args.ram_init is not None:
         soc_kwargs["integrated_main_ram_init"] = \
-         get_mem_data(args.ram_init, endianness='little')
+            get_mem_data(args.ram_init, endianness='little')
 
     add_fsm_state_names()
     output_dir = args.dir
@@ -284,7 +286,10 @@ def main():
     builder = Builder(soc,
                       output_dir=args.dir,
                       csr_csv=args.csr,
-                      compile_software=False)
+                      compile_software=True)
+    builder.software_packages = [
+        ("bios", os.path.abspath(os.path.join(os.path.dirname(__file__), "../../foboot", "sw")))
+    ]
     vns = builder.build(run=False)
     soc.do_exit(vns)
 
