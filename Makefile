@@ -82,3 +82,6 @@ clean/dut: dut.v
 
 clean/decode:
 	rm usb.vcd usb.pcap tb.v
+
+clean/all: clean/dut clean/decode
+	rm -rf build/
