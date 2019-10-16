@@ -1,6 +1,5 @@
 TARGET_OPTIONS = --cpu-type vexriscv --variant epfifo --bios_file ../foboot/sw/foboot.bin
-VERILOG_SOURCES += $(WPWD)/../litex/litex/soc/cores/cpu/vexriscv/verilog/VexRiscv.v $(WPWD)/../foboot/hw/rtl/spimemio.v
-#COMPILE_ARGS += -I $(WPWD)/../litex/litex/soc/cores/cpu/vexriscv/verilog/VexRiscv.v $(WPWD)/../foboot/hw/rtl/spimemio.v
+VERILOG_SOURCES += $(WPWD)/../litex/litex/soc/cores/cpu/vexriscv/verilog/VexRiscv.v
 export DUT_CSRS = csr.csv
 export PATH := ../../../litex-vexriscv-build/toolchain/riscv64-unknown-elf-gcc-8.2.0-2019.05.3-x86_64-linux-ubuntu14/bin:../../../zvb/zvb-ci/litex-fpga/riscv-gcc/bin:$(PATH)
 

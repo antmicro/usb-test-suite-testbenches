@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 
-from migen import Module, Signal, ClockDomain, Instance, If
-from migen.fhdl.specials import TSTriple
-from migen.fhdl.structure import ClockSignal, ResetSignal, Replicate, Cat
-from migen.fhdl.bitcontainer import bits_for
+from migen import Module, Signal, ClockDomain
+from migen.fhdl.structure import ResetSignal
 
 from litex.build.sim.platform import SimPlatform
 from litex.build.generic_platform import Pins, IOStandard, Subsignal
@@ -12,24 +10,15 @@ from litex.soc.integration.builder import Builder, builder_args
 from litex.soc.integration.soc_core import (soc_core_argdict, soc_core_args,
                                             get_mem_data)
 from litex.soc.interconnect import wishbone
-from litex.soc.interconnect.csr import AutoCSR, CSRStatus, CSRStorage
 
 
 from valentyusb.usbcore import io as usbio
-from valentyusb.usbcore.cpu import dummyusb, eptri, epfifo
+from valentyusb.usbcore.cpu import epfifo
 
 import argparse
 import os
 
 _io = [
-    # Wishbone
-    ("wishbone", 0, Subsignal("adr", Pins(30)), Subsignal("dat_r", Pins(32)),
-     Subsignal("dat_w",
-               Pins(32)), Subsignal("sel", Pins(4)), Subsignal("cyc", Pins(1)),
-     Subsignal("stb", Pins(1)), Subsignal("ack",
-                                          Pins(1)), Subsignal("we", Pins(1)),
-     Subsignal("cti", Pins(3)), Subsignal("bte",
-                                          Pins(2)), Subsignal("err", Pins(1))),
     ("serial", 0, Subsignal("tx", Pins("J20")), Subsignal("rx", Pins("K21")),
      IOStandard("LVCMOS33")),
     (
@@ -39,14 +28,6 @@ _io = [
         Subsignal("d_n", Pins(1)),
         Subsignal("pullup", Pins(1)),
         Subsignal("tx_en", Pins(1)),
-    ),
-    ("spiflash", 0,
-        Subsignal("cs_n", Pins("C1"), IOStandard("LVCMOS33")),
-        Subsignal("clk",  Pins("D1"), IOStandard("LVCMOS33")),
-        Subsignal("miso", Pins("E1"), IOStandard("LVCMOS33")),
-        Subsignal("mosi", Pins("F1"), IOStandard("LVCMOS33")),
-        Subsignal("wp",   Pins("A1"), IOStandard("LVCMOS33")),
-        Subsignal("hold", Pins("B1"), IOStandard("LVCMOS33")),
     ),
     (
         "clk",
@@ -91,114 +72,6 @@ class _CRG(Module):
             ResetSignal("usb_12").eq(rst),
             ResetSignal("usb_48").eq(rst),
         ]
-
-class PicoRVSpi(Module, AutoCSR):
-    def __init__(self, platform, pads, size=2*1024*1024):
-        self.size = size
-
-        self.bus = bus = wishbone.Interface()
-
-        self.reset = Signal()
-
-        self.cfg1 = CSRStorage(size=8)
-        self.cfg2 = CSRStorage(size=8)
-        self.cfg3 = CSRStorage(size=8)
-        self.cfg4 = CSRStorage(size=8)
-
-        self.stat1 = CSRStatus(size=8)
-        self.stat2 = CSRStatus(size=8)
-        self.stat3 = CSRStatus(size=8)
-        self.stat4 = CSRStatus(size=8)
-
-        cfg = Signal(32)
-        cfg_we = Signal(4)
-        cfg_out = Signal(32)
-        self.comb += [
-            cfg.eq(Cat(self.cfg1.storage, self.cfg2.storage, self.cfg3.storage, self.cfg4.storage)),
-            cfg_we.eq(Cat(self.cfg1.re, self.cfg2.re, self.cfg3.re, self.cfg4.re)),
-            self.stat1.status.eq(cfg_out[0:8]),
-            self.stat2.status.eq(cfg_out[8:16]),
-            self.stat3.status.eq(cfg_out[16:24]),
-            self.stat4.status.eq(cfg_out[24:32]),
-        ]
-
-        mosi_pad = TSTriple()
-        miso_pad = TSTriple()
-        cs_n_pad = TSTriple()
-        clk_pad  = TSTriple()
-        wp_pad   = TSTriple()
-        hold_pad = TSTriple()
-        self.specials += mosi_pad.get_tristate(pads.mosi)
-        self.specials += miso_pad.get_tristate(pads.miso)
-        self.specials += cs_n_pad.get_tristate(pads.cs_n)
-        self.specials += clk_pad.get_tristate(pads.clk)
-        self.specials += wp_pad.get_tristate(pads.wp)
-        self.specials += hold_pad.get_tristate(pads.hold)
-
-        reset = Signal()
-        self.comb += [
-            reset.eq(ResetSignal() | self.reset),
-            cs_n_pad.oe.eq(~reset),
-            clk_pad.oe.eq(~reset),
-        ]
-
-        flash_addr = Signal(24)
-        # size/4 because data bus is 32 bits wide, -1 for base 0
-        mem_bits = bits_for(int(size/4)-1)
-        pad = Signal(2)
-        self.comb += flash_addr.eq(Cat(pad, bus.adr[0:mem_bits-1]))
-
-        read_active = Signal()
-        spi_ready = Signal()
-        self.sync += [
-            If(bus.stb & bus.cyc & ~read_active,
-                read_active.eq(1),
-                bus.ack.eq(0),
-            )
-            .Elif(read_active & spi_ready,
-                read_active.eq(0),
-                bus.ack.eq(1),
-            )
-            .Else(
-                bus.ack.eq(0),
-                read_active.eq(0),
-            )
-        ]
-
-        o_rdata = Signal(32)
-        self.comb += bus.dat_r.eq(o_rdata)
-
-        self.specials += Instance("spimemio",
-            o_flash_io0_oe = mosi_pad.oe,
-            o_flash_io1_oe = miso_pad.oe,
-            o_flash_io2_oe = wp_pad.oe,
-            o_flash_io3_oe = hold_pad.oe,
-
-            o_flash_io0_do = mosi_pad.o,
-            o_flash_io1_do = miso_pad.o,
-            o_flash_io2_do = wp_pad.o,
-            o_flash_io3_do = hold_pad.o,
-            o_flash_csb    = cs_n_pad.o,
-            o_flash_clk    = clk_pad.o,
-
-            i_flash_io0_di = mosi_pad.i,
-            i_flash_io1_di = miso_pad.i,
-            i_flash_io2_di = wp_pad.i,
-            i_flash_io3_di = hold_pad.i,
-
-            i_resetn = ~reset,
-            i_clk = ClockSignal(),
-
-            i_valid = bus.stb & bus.cyc,
-            o_ready = spi_ready,
-            i_addr  = flash_addr,
-            o_rdata = o_rdata,
-
-            i_cfgreg_we = cfg_we,
-            i_cfgreg_di = cfg,
-            o_cfgreg_do = cfg_out,
-        )
-        platform.add_source("../foboot/rtl/spimemio.v")
 
 
 class FirmwareROM(wishbone.SRAM):
@@ -255,7 +128,6 @@ class BaseSoC(SoCCore):
         clk_freq = int(48e6)
         self.submodules.crg = _CRG(platform)
         output_dir = kwargs.get("output_dir", "build")
-        usb_variant = kwargs.get("variant", "epfifo")
         kwargs['cpu_reset_address'] = 0x0
 
         self.output_dir = output_dir
@@ -275,16 +147,7 @@ class BaseSoC(SoCCore):
         self.comb += usb_pads.tx_en.eq(usb_iobuf.usb_tx_en)
         self.submodules.usb = epfifo.PerEndpointFifoInterface(usb_iobuf,
                                                               debug=False)
-        class _WishboneBridge(Module):
-            def __init__(self, interface):
-                self.wishbone = interface
 
-        spi_pads = platform.request("spiflash")
-        self.submodules.picorvspi = PicoRVSpi(platform, spi_pads)
-        self.register_mem("spiflash", self.mem_map["spiflash"],
-            self.picorvspi.bus, size=self.picorvspi.size)
-        self.submodules.wishbone = _WishboneBridge(
-            self.platform.request("wishbone"))
 
 def add_fsm_state_names():
     """Hack the FSM module to add state names to the output"""
@@ -395,7 +258,8 @@ def main():
                       csr_csv=args.csr,
                       compile_software=True)
     builder.software_packages = [
-        ("bios", os.path.abspath(os.path.join(os.path.dirname(__file__), "../../foboot", "sw")))
+        ("bios", os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                              "../../foboot", "sw")))
     ]
     vns = builder.build(run=False)
     soc.do_exit(vns)
