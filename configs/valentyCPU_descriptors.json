@@ -37,30 +37,15 @@
           "bInterfaceSubClass":      1,
           "bInterfaceProtocol":      2,
           "iInterface":              2,
-          "Endpoint": [
+          "Subdescriptors": [
             {
+              "name":     "DFU Functional",
               "bLength":                 9,
               "bDescriptorType":        33,
-              "bEndpointAddress":     [1, "OUT"],
-              "bmAttributes": {
-                "Transfer": "Bulk",
-                "Synch": "None",
-                "Usage": "Data"
-              },
-              "wMaxPacketSize":     "0x0200",
-              "bInterval":               0
-            },
-            {
-              "bLength":                 7,
-              "bDescriptorType":         5,
-              "bEndpointAddress":     [2, "IN"],
-              "bmAttributes": {
-                "Transfer": "Bulk",
-                "Synch": "None",
-                "Usage": "Data"
-              },
-              "wMaxPacketSize":     "0x0200",
-              "bInterval":               0
+              "bmAttributes":       "0x0D",
+              "wDetachTimeout":      10000,
+              "wTransferSize":        1024,
+              "bcdDFUVersion":    "0x0101"
             }
           ]
         }
@@ -71,9 +56,9 @@
     ["0x0409"],
     {
       "0x0409" : [
-        "Generic",
-        "IpCore",
-        "1234567890"
+        "Foosn",
+        "Fomu Bootloader ",
+        "MSFT100~"
       ]
     }
   ]

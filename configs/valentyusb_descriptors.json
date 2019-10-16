@@ -37,8 +37,9 @@
           "bInterfaceSubClass":      6,
           "bInterfaceProtocol":     80,
           "iInterface":              0,
-          "Endpoint": [
+          "Subdescriptors": [
             {
+              "name":           "Endpoint",
               "bLength":                 7,
               "bDescriptorType":         5,
               "bEndpointAddress":     [1, "OUT"],
@@ -51,6 +52,7 @@
               "bInterval":               0
             },
             {
+              "name":           "Endpoint",
               "bLength":                 7,
               "bDescriptorType":         5,
               "bEndpointAddress":     [2, "IN"],

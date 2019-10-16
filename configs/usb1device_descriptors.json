@@ -33,12 +33,13 @@
           "bInterfaceNumber":        0,
           "bAlternateSetting":       0,
           "bNumEndpoints":           5,
-          "bInterfaceClass":         255,
+          "bInterfaceClass":       255,
           "bInterfaceSubClass":      1,
           "bInterfaceProtocol":     255,
           "iInterface":              0,
-          "Endpoint": [
+          "Subdescriptors": [
             {
+              "name":           "Endpoint",
               "bLength":                 7,
               "bDescriptorType":         5,
               "bEndpointAddress":     [1, "IN"],
@@ -51,6 +52,7 @@
               "bInterval":               1
             },
             {
+              "name":           "Endpoint",
               "bLength":                 7,
               "bDescriptorType":         5,
               "bEndpointAddress":     [2, "OUT"],
@@ -63,6 +65,7 @@
               "bInterval":               1
             },
             {
+              "name":           "Endpoint",
               "bLength":                 7,
               "bDescriptorType":         5,
               "bEndpointAddress":     [3, "IN"],
@@ -75,6 +78,7 @@
               "bInterval":               1
             },
             {
+              "name":           "Endpoint",
               "bLength":                 7,
               "bDescriptorType":         5,
               "bEndpointAddress":     [4, "OUT"],
@@ -87,6 +91,7 @@
               "bInterval":               1
             },
             {
+              "name":           "Endpoint",
               "bLength":                 7,
               "bDescriptorType":         5,
               "bEndpointAddress":     [5, "IN"],
