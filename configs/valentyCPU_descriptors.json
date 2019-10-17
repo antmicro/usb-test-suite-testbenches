@@ -1,6 +1,7 @@
-{
-  "_comment": "Foboot",
-  "Device": {
+[
+  {
+    "_comment": "Foboot",
+    "name": "Device",
     "bLength":                18,
     "bDescriptorType":         1,
     "bcdUSB":           "0x0201",
@@ -16,51 +17,54 @@
     "iSerial":                 0,
     "bNumConfigurations":      1
    },
-  "Configuration": {
-    "1": {
-      "bLength":                 9,
-      "bDescriptorType":         2,
-      "wTotalLength":           27,
-      "bNumInterfaces":          1,
-      "bConfigurationValue":     1,
-      "iConfiguration":          1,
-      "bmAttributes":       "0x80",
-      "bMaxPower":              50,
-      "Interface": [
-        {
-          "bLength":                 9,
-          "bDescriptorType":         4,
-          "bInterfaceNumber":        0,
-          "bAlternateSetting":       0,
-          "bNumEndpoints":           0,
-          "bInterfaceClass":       254,
-          "bInterfaceSubClass":      1,
-          "bInterfaceProtocol":      2,
-          "iInterface":              2,
-          "Subdescriptors": [
-            {
-              "name":     "DFU Functional",
-              "bLength":                 9,
-              "bDescriptorType":        33,
-              "bmAttributes":       "0x0D",
-              "wDetachTimeout":      10000,
-              "wTransferSize":        1024,
-              "bcdDFUVersion":    "0x0101"
-            }
-          ]
-        }
-      ]
+   {
+    "name": "Configuration",
+    "bLength":                 9,
+    "bDescriptorType":         2,
+    "wTotalLength":           27,
+    "bNumInterfaces":          1,
+    "bConfigurationValue":     1,
+    "iConfiguration":          1,
+    "bmAttributes":       "0x80",
+    "bMaxPower":              50,
+    "Interface": [
+      {
+        "bLength":                 9,
+        "bDescriptorType":         4,
+        "bInterfaceNumber":        0,
+        "bAlternateSetting":       0,
+        "bNumEndpoints":           0,
+        "bInterfaceClass":       254,
+        "bInterfaceSubClass":      1,
+        "bInterfaceProtocol":      2,
+        "iInterface":              2,
+        "Subdescriptors": [
+          {
+            "name":     "DFU Functional",
+            "bLength":                 9,
+            "bDescriptorType":    "0x21",
+            "bmAttributes":       "0x0D",
+            "wDetachTimeout":      10000,
+            "wTransferSize":        1024,
+            "bcdDFUVersion":    "0x0101"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "String",
+    "bDescriptorType": 3,
+    "0": ["0x0409"],
+    "0x0409" : {
+      "1":      "Foosn",
+      "2":      "Fomu Bootloader ",
+      "0xEE": "MSFT100~"
     }
   },
-  "String": [
-    ["0x0409"],
-    {
-      "0x0409" : [
-        "Foosn",
-        "Fomu Bootloader ",
-        "MSFT100~"
-      ]
-    }
-  ]
-}
+  {
+    "name": "Microsoft BOS Descriptor",
+    "bDescriptorType": "0xF"
+  }
+]
 

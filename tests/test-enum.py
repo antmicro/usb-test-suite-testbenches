@@ -40,15 +40,15 @@ def test_enumeration(dut):
     yield harness.get_string_descriptor(
         lang_id=Descriptor.LangId.UNSPECIFIED,
         idx=0,
-        response=model.stringDescriptorZero.get())
+        response=model.stringDescriptor[0].get())
 
-    if model.stringDescriptorZero.wLangId:
+    if model.stringDescriptor[0].wLangId:
         # If the device implements string descriptors, let's try reading them
-        lang_id = model.stringDescriptorZero.wLangId[0]
+        lang_id = model.stringDescriptor[0].wLangId[0]
         yield harness.get_string_descriptor(
             lang_id=lang_id,
             idx=1,
-            response=model.stringDescriptor[lang_id][0].get())
+            response=model.stringDescriptor[lang_id][1].get())
 
     yield harness.set_configuration(1)
     # Device should now be in "Configured" state

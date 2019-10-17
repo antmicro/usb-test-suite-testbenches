@@ -47,7 +47,7 @@ def test_control_transfer_in(dut):
         getDescriptorRequest(descriptor_type=Descriptor.Types.STRING,
                              descriptor_index=0,
                              lang_id=0,
-                             length=10), model.stringDescriptorZero.get())
+                             length=10), model.stringDescriptor[0].get())
 
 
 @cocotb.test()
