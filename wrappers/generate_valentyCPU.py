@@ -16,7 +16,6 @@ from valentyusb.usbcore import io as usbio
 from valentyusb.usbcore.cpu import epfifo
 
 import argparse
-import os
 
 _io = [
     ("serial", 0, Subsignal("tx", Pins("J20")), Subsignal("rx", Pins("K21")),
@@ -136,11 +135,9 @@ class BaseSoC(SoCCore):
                          platform,
                          clk_freq=clk_freq,
                          integrated_sram_size=0x8000,
+                         integrated_rom_size=0x8000,
                          with_uart=False,
                          **kwargs)
-        self.integrated_rom_size = bios_size = 0x8000
-        self.submodules.rom = wishbone.SRAM(bios_size, read_only=True, init=[])
-        self.register_rom(self.rom.bus, bios_size)
         # Add USB pads
         usb_pads = platform.request("usb")
         usb_iobuf = usbio.IoBuf(usb_pads.d_p, usb_pads.d_n, usb_pads.pullup)
@@ -240,13 +237,13 @@ def main():
         "--bios_file",
         help="use specified file as a BIOS, rather than building one"
     )
-    parser.add_argument("--ram-init", default=None, help="ram_init file")
+    parser.add_argument("--rom-init", default=None, help="rom_init file")
     args = parser.parse_args()
 
     soc_kwargs = soc_core_argdict(args)
-    if args.ram_init is not None:
-        soc_kwargs["integrated_main_ram_init"] = \
-            get_mem_data(args.ram_init, endianness='little')
+    if args.rom_init is not None:
+        soc_kwargs["integrated_rom_init"] = \
+            get_mem_data(args.rom_init, endianness='little')
 
     add_fsm_state_names()
     output_dir = args.dir
@@ -256,11 +253,7 @@ def main():
     builder = Builder(soc,
                       output_dir=args.dir,
                       csr_csv=args.csr,
-                      compile_software=True)
-    builder.software_packages = [
-        ("bios", os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                              "../../foboot", "sw")))
-    ]
+                      compile_software=False)
     vns = builder.build(run=False)
     soc.do_exit(vns)
 
