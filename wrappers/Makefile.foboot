@@ -9,7 +9,7 @@ $(WPWD)/../foboot/sw/foboot.bin:
 
 sim: $(PWD)/dut.v
 	cp -r build/gateware/mem.init build/gateware/mem_1.init .
-	rm results.xml
+	rm -f results.xml
 	make results.xml
 
 clean::
