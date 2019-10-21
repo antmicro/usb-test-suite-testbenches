@@ -17,7 +17,6 @@ def test_enumeration_w10(dut):
     harness = get_harness(dut)
     yield harness.reset()
     yield harness.connect()
-#    yield Timer(3e3, units="us")
     yield Timer(1e3, units="us")
 
     yield harness.port_reset(1e3)

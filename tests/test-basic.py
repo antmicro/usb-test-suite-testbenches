@@ -8,9 +8,9 @@ from cocotb_usb.harness import get_harness
 from cocotb_usb.device import UsbDevice
 from cocotb_usb.usb.endpoint import EndpointType
 from cocotb_usb.usb.pid import PID
-from cocotb_usb.usb.descriptors import (Descriptor, getDescriptorRequest,
-                                        FeatureSelector, USBDeviceRequest,
-                                        setFeatureRequest)
+from cocotb_usb.descriptors import (Descriptor, getDescriptorRequest,
+                                    FeatureSelector, USBDeviceRequest,
+                                    setFeatureRequest)
 
 descriptorFile = environ['TARGET_CONFIG']
 model = UsbDevice(descriptorFile)
