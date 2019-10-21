@@ -62,7 +62,7 @@ export TARGET
 $(PWD)/tb.v: $(WPWD)/wrappers/tb_$(TARGET).v
 	cp $(WPWD)/wrappers/tb_$(TARGET).v ./tb.v
 
-$(PWD)/dut.v: $(WRAPPER_SCRIPT) $(WPWD)/tb.v
+$(PWD)/dut.v: $(WRAPPER_SCRIPT) $(WPWD)/tb.v $(TARGET_DEPS)
 	cd ..
 	PYTHONPATH=../litex:../migen:../valentyusb:.. python3 $(WRAPPER_SCRIPT) $(TARGET_OPTIONS)
 	mv build/gateware/dut.v .
@@ -77,8 +77,13 @@ $(PWD)/usb.pcap: $(PWD)/usb.vcd
 
 decode: $(PWD)/tb.v $(PWD)/usb.pcap
 
-clean/dut: dut.v
-	rm dut.v
+clean/dut:
+	rm -f dut.v
 
 clean/decode:
-	rm usb.vcd usb.pcap tb.v
+	rm -f usb.vcd usb.pcap tb.v
+
+clean/all: clean/dut clean/decode
+	rm -rf build/
+
+clean:: clean/all

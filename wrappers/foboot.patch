@@ -1,0 +1,55 @@
+diff --git a/sw/src/main.c b/sw/src/main.c
+index 05a1b3c..a822490 100644
+--- a/sw/src/main.c
++++ b/sw/src/main.c
+@@ -164,28 +164,28 @@ void reboot(void) {
+ 
+ static void init(void)
+ {
+-    rgb_init();
+-    picorvspi_cfg4_write(0x80);
+-    spi = spiAlloc();
+-    spiSetPin(spi, SP_MOSI, 0);
+-    spiSetPin(spi, SP_MISO, 1);
+-    spiSetPin(spi, SP_WP, 2);
+-    spiSetPin(spi, SP_HOLD, 3);
+-    spiSetPin(spi, SP_CLK, 4);
+-    spiSetPin(spi, SP_CS, 5);
+-    spiSetPin(spi, SP_D0, 0);
+-    spiSetPin(spi, SP_D1, 1);
+-    spiSetPin(spi, SP_D2, 2);
+-    spiSetPin(spi, SP_D3, 3);
+-    spiInit(spi);
+-    spiFree();
+-    maybe_boot_updater();
+-    maybe_boot_fbm();
+-
+-    spiInit(spi);
+-#ifdef CSR_UART_BASE
+-    init_printf(NULL, rv_putchar);
+-#endif
++//    rgb_init();
++//    picorvspi_cfg4_write(0x80);
++//    spi = spiAlloc();
++//    spiSetPin(spi, SP_MOSI, 0);
++//    spiSetPin(spi, SP_MISO, 1);
++//    spiSetPin(spi, SP_WP, 2);
++//    spiSetPin(spi, SP_HOLD, 3);
++//    spiSetPin(spi, SP_CLK, 4);
++//    spiSetPin(spi, SP_CS, 5);
++//    spiSetPin(spi, SP_D0, 0);
++//    spiSetPin(spi, SP_D1, 1);
++//    spiSetPin(spi, SP_D2, 2);
++//    spiSetPin(spi, SP_D3, 3);
++//    spiInit(spi);
++//    spiFree();
++//    maybe_boot_updater();
++//    maybe_boot_fbm();
++//
++//    spiInit(spi);
++//#ifdef CSR_UART_BASE
++//    init_printf(NULL, rv_putchar);
++//#endif
+     irq_setmask(0);
+     irq_setie(1);
+     uart_init();

@@ -1,0 +1,16 @@
+TARGET_OPTIONS = --cpu-type vexriscv --variant epfifo --rom-init ../foboot/sw/foboot.bin
+VERILOG_SOURCES += $(WPWD)/../litex/litex/soc/cores/cpu/vexriscv/verilog/VexRiscv.v
+export PATH := ../../../litex-vexriscv-build/toolchain/riscv64-unknown-elf-gcc-8.2.0-2019.05.3-x86_64-linux-ubuntu14/bin:../../../zvb/zvb-ci/litex-fpga/riscv-gcc/bin:$(PATH)
+TARGET_DEPS = $(WPWD)/../foboot/sw/foboot.bin
+
+$(WPWD)/../foboot/sw/foboot.bin:
+	patch -b ../foboot/sw/src/main.c wrappers/foboot.patch
+	make -C ../foboot/sw
+
+sim: $(PWD)/dut.v
+	cp -r build/gateware/mem.init build/gateware/mem_1.init .
+	rm -f results.xml
+	make results.xml
+
+clean::
+	rm -f ./mem.init ./mem_1.init
