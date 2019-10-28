@@ -5,10 +5,9 @@ from migen.fhdl.structure import ResetSignal
 
 from litex.build.sim.platform import SimPlatform
 from litex.build.generic_platform import Pins, IOStandard, Subsignal
-from litex.soc.integration import SoCCore
 from litex.soc.integration.builder import Builder, builder_args
 from litex.soc.integration.soc_core import (soc_core_argdict, soc_core_args,
-                                            get_mem_data)
+                                            get_mem_data, SoCCore)
 from litex.soc.interconnect import wishbone
 
 
@@ -63,7 +62,7 @@ class _CRG(Module):
 
         self.comb += clk12.eq(clk12_counter[1])
 
-        self.comb += self.cd_sys.clk.eq(clk48)
+        self.comb += self.cd_sys.clk.eq(clk12)
         self.comb += self.cd_usb_12.clk.eq(clk12)
 
         self.comb += [
@@ -141,14 +140,14 @@ class BaseSoC(SoCCore):
                          integrated_sram_size=0x8000,
                          integrated_rom_size=0x8000,
                          with_uart=False,
-                         with_timer=True,
+                         with_timer=False,
                          **kwargs)
         # Add USB pads
         usb_pads = platform.request("usb")
         usb_iobuf = usbio.IoBuf(usb_pads.d_p, usb_pads.d_n, usb_pads.pullup)
         self.comb += usb_pads.tx_en.eq(usb_iobuf.usb_tx_en)
         self.submodules.usb = eptri.TriEndpointInterface(usb_iobuf,
-                                                         debug=False)
+                                                         debug=True)
         #self.submodules.usb = epfifo.PerEndpointFifoInterface(usb_iobuf,
         #                                                 debug=False)
         #self.submodules.usb = unififo.UsbUniFifo(usb_iobuf)

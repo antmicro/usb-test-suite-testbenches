@@ -5,9 +5,9 @@
     "bLength":                18,
     "bDescriptorType":         1,
     "bcdUSB":           "0x0201",
-    "bDeviceClass":            0,
-    "bDeviceSubClass":         0,
-    "bDeviceProtocol":         0,
+    "bDeviceClass":            "0xef",
+    "bDeviceSubClass":         2,
+    "bDeviceProtocol":         1,
     "bMaxPacketSize0":        64,
     "idVendor":         "0x1209",
     "idProduct":        "0x5bf0",
@@ -21,14 +21,15 @@
     "name": "Configuration",
     "bLength":                 9,
     "bDescriptorType":         2,
-    "wTotalLength":           27,
-    "bNumInterfaces":          1,
+    "wTotalLength":           143,
+    "bNumInterfaces":          5,
     "bConfigurationValue":     1,
     "iConfiguration":          1,
     "bmAttributes":       "0x80",
     "bMaxPower":              50,
     "Interface": [
       {
+        "name": "DFU Mode",
         "bLength":                 9,
         "bDescriptorType":         4,
         "bInterfaceNumber":        0,
@@ -37,7 +38,7 @@
         "bInterfaceClass":       254,
         "bInterfaceSubClass":      1,
         "bInterfaceProtocol":      2,
-        "iInterface":              2,
+        "iInterface":              0,
         "Subdescriptors": [
           {
             "name":     "DFU Functional",
@@ -47,6 +48,176 @@
             "wDetachTimeout":      10000,
             "wTransferSize":        1024,
             "bcdDFUVersion":    "0x0101"
+          }
+        ]
+      },
+      {
+        "name": "CDC Interface 1",
+        "bLength":                 9,
+        "bDescriptorType":         4,
+        "bInterfaceNumber":        1,
+        "bAlternateSetting":       0,
+        "bNumEndpoints":           1,
+        "bInterfaceClass":       2,
+        "bInterfaceSubClass":      2,
+        "bInterfaceProtocol":      1,
+        "iInterface":              0,
+        "Subdescriptors": [
+          {
+            "name": "Header Functional",
+            "bLength": 5,
+            "bDescriptorType": "0x24",
+            "bDescriptorSubtype": 0,
+            "bcdCDC": "0x0110"
+          },
+          {
+            "name": "Call Management Functional",
+            "bLength": 5,
+            "bDescriptorType": "0x24",
+            "bDescriptorSubtype": 1,
+            "bmCapabilities": 0,
+            "bDataInterface": 1
+          },
+          {
+            "name": "ACM Functional",
+            "bLength": 4,
+            "bDescriptorType": "0x24",
+            "bDescriptorSubtype": 2,
+            "bmCapabilities": 6
+          },
+          {
+            "name": "Union Functional",
+            "bLength": 5,
+            "bDescriptorType": "0x24",
+            "bDescriptorSubtype": 6,
+            "bMasterInterface": 0,
+            "bSlaveInterface0": 1
+          },
+          {
+            "name":           "Endpoint",
+            "bLength":                 7,
+            "bDescriptorType":         5,
+            "bEndpointAddress":     "0x81",
+            "bmAttributes": "0x03",
+            "wMaxPacketSize":     "0x0010",
+            "bInterval":               255
+          }
+        ]
+      },
+      {
+        "name": "CDC Interface 1 data",
+        "bLength":                 9,
+        "bDescriptorType":         4,
+        "bInterfaceNumber":        2,
+        "bAlternateSetting":       0,
+        "bNumEndpoints":           2,
+        "bInterfaceClass":       "0x0A",
+        "bInterfaceSubClass":      0,
+        "bInterfaceProtocol":      0,
+        "iInterface":              0,
+        "Subdescriptors": [
+          {
+            "name":           "Endpoint",
+            "bLength":                 7,
+            "bDescriptorType":         5,
+            "bEndpointAddress":     "0x82",
+            "bmAttributes": "0x02",
+            "wMaxPacketSize":     "0x0040",
+            "bInterval":               1
+          },
+          {
+            "name":           "Endpoint",
+            "bLength":                 7,
+            "bDescriptorType":         5,
+            "bEndpointAddress":     "0x02",
+            "bmAttributes": "0x02",
+            "wMaxPacketSize":     "0x0040",
+            "bInterval":               1
+          }
+        ]
+      },
+      {
+        "name": "CDC Interface 2",
+        "bLength":                 9,
+        "bDescriptorType":         4,
+        "bInterfaceNumber":        3,
+        "bAlternateSetting":       0,
+        "bNumEndpoints":           1,
+        "bInterfaceClass":       2,
+        "bInterfaceSubClass":      2,
+        "bInterfaceProtocol":      1,
+        "iInterface":              0,
+        "Subdescriptors": [
+          {
+            "name": "Header Functional",
+            "bLength": 5,
+            "bDescriptorType": "0x24",
+            "bDescriptorSubtype": 0,
+            "bcdCDC": "0x0110"
+          },
+          {
+            "name": "Call Management Functional",
+            "bLength": 5,
+            "bDescriptorType": "0x24",
+            "bDescriptorSubtype": 1,
+            "bmCapabilities": 0,
+            "bDataInterface": 1
+          },
+          {
+            "name": "ACM Functional",
+            "bLength": 4,
+            "bDescriptorType": "0x24",
+            "bDescriptorSubtype": 2,
+            "bmCapabilities": 6
+          },
+          {
+            "name": "Union Functional",
+            "bLength": 5,
+            "bDescriptorType": "0x24",
+            "bDescriptorSubtype": 6,
+            "bMasterInterface": 0,
+            "bSlaveInterface0": 1
+          },
+          {
+            "name":           "Endpoint",
+            "bLength":                 7,
+            "bDescriptorType":         5,
+            "bEndpointAddress":     "0x83",
+            "bmAttributes": "0x03",
+            "wMaxPacketSize":     "0x0010",
+            "bInterval":               255
+          }
+        ]
+      },
+      {
+        "name": "CDC Interface 2 data",
+        "bLength":                 9,
+        "bDescriptorType":         4,
+        "bInterfaceNumber":        4,
+        "bAlternateSetting":       0,
+        "bNumEndpoints":           2,
+        "bInterfaceClass":       "0x0A",
+        "bInterfaceSubClass":      0,
+        "bInterfaceProtocol":      0,
+        "iInterface":              0,
+        "Subdescriptors": [
+          {
+            "name":           "Endpoint",
+            "bLength":                 7,
+            "bDescriptorType":         5,
+            "bEndpointAddress":     "0x84",
+            "bmAttributes": "0x02",
+            "wMaxPacketSize":     "0x0040",
+            "bInterval":               1
+          },
+          {
+            "name":           "Endpoint",
+            "bLength":                 7,
+            "bDescriptorType":         5,
+            "bEndpointAddress":     "0x04",
+            "bmAttributes": "0x02",
+            "wMaxPacketSize":     "0x0040",
+            "bInterval":               1
           }
         ]
       }
