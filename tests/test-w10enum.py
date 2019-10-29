@@ -27,7 +27,7 @@ def test_enumeration_w10(dut):
     yield harness.set_device_address(DEVICE_ADDRESS)
     yield harness.get_device_descriptor(response=model.deviceDescriptor.get())
     yield harness.get_configuration_descriptor(
-        length=0xFF, response=[])  # Fail test here for now, but print response
+        length=0xFF, response=model.configDescriptor[1].get())
 
     # Get device qualifier - for USB 2.0 devices only!
     # yield harness.get_device_qualifier(

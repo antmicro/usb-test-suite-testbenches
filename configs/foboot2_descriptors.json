@@ -229,7 +229,7 @@
     "0": ["0x0409"],
     "0x0409" : {
       "1":      "Foosn",
-      "2":      "Fomu Bootloader ",
+      "2":      "Fomu DFU Bootloader v1.8.7-61-g7edde2c",
       "0xEE": "MSFT100~"
     }
   },
