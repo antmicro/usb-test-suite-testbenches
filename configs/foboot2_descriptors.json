@@ -91,7 +91,7 @@
             "bDescriptorType": "0x24",
             "bDescriptorSubtype": 6,
             "bMasterInterface": 0,
-            "bSlaveInterface0": 1
+            "bSlaveInterface": [ 1 ]
           },
           {
             "name":           "Endpoint",
@@ -176,7 +176,7 @@
             "bDescriptorType": "0x24",
             "bDescriptorSubtype": 6,
             "bMasterInterface": 0,
-            "bSlaveInterface0": 1
+            "bSlaveInterface": [ 1 ]
           },
           {
             "name":           "Endpoint",
