@@ -165,7 +165,8 @@ class BaseSoC(SoCCore):
             def __init__(self, interface):
                 self.wishbone = interface
 
-        self.add_cpu(_WishboneBridge(self.platform.request("wishbone")))
+        self.submodules.cpu = _WishboneBridge(
+                self.platform.request("wishbone"))
         self.add_wb_master(self.cpu.wishbone)
 
 
