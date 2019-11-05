@@ -12,7 +12,7 @@ from migen.fhdl.structure import ResetSignal
 
 from litex.build.generic_platform import Pins, Subsignal
 from litex.build.sim.platform import SimPlatform
-from litex.soc.integration import SoCCore
+from litex.soc.integration.soc_core import SoCCore
 from litex.soc.integration.builder import Builder
 
 _io = [
