@@ -6,9 +6,7 @@ This repository contains test and wrapper scripts for USB IP cores implemented u
 You can use [parent repository](https://github.com/antmicro/usb-test-suite-build) to ensure correct folder structure is maintained.
 
 ### Prerequisites
-* [Migen](https://github.com/m-labs/migen)
 * [LiteX](https://github.com/enjoy-digital/litex)
-
 * [iverilog](http://iverilog.icarus.com/)
 * python3 and pip
 * [cocotb](https://github.com/cocotb/cocotb)
@@ -24,7 +22,7 @@ Test output is saved to `results.xml` file. Signal states are stored in `dump.vc
 
 Basic options that can be set:
 * `TEST_SCRIPT` - name of script from the *tests* directory to be executed, without `.py` extension.
-* `TARGET` - IP core to be tested. Currently `valentyusb` and `usb1device` are supported.
+* `TARGET` - IP core to be tested. Currently `valentyusb`, `usb1device` and `foboot` are supported.
 * `TARGET_OPTIONS` - if some can be used in the wrapper script.
 
 Other makefile targets:
