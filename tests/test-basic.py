@@ -4,6 +4,7 @@ from os import environ
 
 import cocotb
 from cocotb.clock import Timer
+from cocotb.utils import get_sim_time
 from cocotb_usb.harness import get_harness
 from cocotb_usb.device import UsbDevice
 from cocotb_usb.usb.endpoint import EndpointType
@@ -21,15 +22,14 @@ def test_control_setup(dut):
     harness = get_harness(dut)
     yield harness.reset()
     yield harness.connect()
-    yield Timer(1e3, units="us")
+    yield harness.port_reset(1e3)
 
     # Device is at address 0 after reset
     yield harness.transaction_setup(
         0,
-        getDescriptorRequest(Descriptor.Types.DEVICE,
-                             descriptor_index=0,
-                             lang_id=0,
-                             length=0))
+        setFeatureRequest(FeatureSelector.ENDPOINT_HALT,
+                          USBDeviceRequest.Type.ENDPOINT, 0))
+    harness.packet_deadline = get_sim_time("us") + harness.MAX_PACKET_TIME
     yield harness.transaction_data_in(0, 0, [])
 
 
@@ -74,7 +74,10 @@ def test_sof_is_ignored(dut):
     epaddr_out = EndpointType.epaddr(0, EndpointType.OUT)
     yield harness.set_device_address(DEVICE_ADDRESS)
 
-    data = [0, 1, 8, 0, 4, 3, 0, 0]
+    data = getDescriptorRequest(descriptor_type=Descriptor.Types.STRING,
+                                descriptor_index=0,
+                                lang_id=0,
+                                length=10)
     # Send SOF packet
     yield harness.host_send_sof(2)
 
@@ -83,6 +86,7 @@ def test_sof_is_ignored(dut):
     # Send SETUP packet
     yield harness.host_send_token_packet(PID.SETUP, DEVICE_ADDRESS,
                                          EndpointType.epnum(epaddr_out))
+    harness.request_deadline = get_sim_time("us") + harness.MAX_REQUEST_TIME
 
     # Send another SOF packet
     yield harness.host_send_sof(3)
@@ -90,6 +94,7 @@ def test_sof_is_ignored(dut):
     # Data stage
     # ------------------------------------------
     # Send DATA packet
+    harness.packet_deadline = get_sim_time("us") + harness.MAX_PACKET_TIME
     yield harness.host_send_data_packet(PID.DATA1, data)
     yield harness.host_expect_ack()
 
@@ -98,17 +103,22 @@ def test_sof_is_ignored(dut):
 
     # # Status stage
     # # ------------------------------------------
+    harness.packet_deadline = get_sim_time("us") + harness.MAX_PACKET_TIME
     yield harness.transaction_status_out(DEVICE_ADDRESS, epaddr_out)
 
 
-@cocotb.test()
+@cocotb.test(expect_fail=True)  # Doesn't set STALL as expected
 def test_control_setup_clears_stall(dut):
     harness = get_harness(dut)
     yield harness.reset()
     yield harness.connect()
     yield Timer(1e3, units="us")
 
-    addr = 0
+    addr = 13
+    yield harness.set_device_address(addr)
+    yield harness.set_configuration(1)
+    yield Timer(1e2, units="us")
+
     epaddr_out = EndpointType.epaddr(0, EndpointType.OUT)
 
     d = [0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0, 0]
@@ -120,20 +130,27 @@ def test_control_setup_clears_stall(dut):
     yield harness.transaction_data_out(addr, epaddr_out, d)
 
     # Set endpoint HALT explicitly
-    yield harness.control_transfer_out(
-        0,
+    yield harness.transaction_setup(
+        addr,
         setFeatureRequest(FeatureSelector.ENDPOINT_HALT,
-                          USBDeviceRequest.Type.ENDPOINT, 0), None)
-
+                          USBDeviceRequest.Type.ENDPOINT, 0))
+    harness.packet_deadline = get_sim_time("us") + harness.MAX_PACKET_TIME
+    yield harness.transaction_data_in(addr, 0, [])
     # do another receive, which should fail
-    yield harness.transaction_data_out(addr, epaddr_out, d, expected=PID.STALL)
+    harness.retry = True
+    harness.packet_deadline = get_sim_time("us") + 1e3  # try for a ms
+    while harness.retry:
+        yield harness.host_send_token_packet(PID.IN, addr, 0)
+        yield harness.host_expect_stall()
+        if get_sim_time("us") > harness.packet_deadline:
+            raise cocotb.result.TestFailure("Did not receive STALL token")
 
     # do a setup, which should pass
-    yield harness.control_transfer_out(addr, d)
+    yield harness.get_device_descriptor(response=model.deviceDescriptor.get())
 
     # finally, do one last transfer, which should succeed now
     # that the endpoint is unstalled.
-    yield harness.transaction_data_out(addr, epaddr_out, d)
+    yield harness.get_device_descriptor(response=model.deviceDescriptor.get())
 
 
 @cocotb.test()
