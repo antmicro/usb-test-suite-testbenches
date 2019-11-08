@@ -165,9 +165,9 @@ class BaseSoC(SoCCore):
             def __init__(self, interface):
                 self.wishbone = interface
 
-        self.submodules.cpu = _WishboneBridge(
+        self.submodules.bridge = _WishboneBridge(
                 self.platform.request("wishbone"))
-        self.add_wb_master(self.cpu.wishbone)
+        self.add_wb_master(self.bridge.wishbone)
 
 
 def add_fsm_state_names():
