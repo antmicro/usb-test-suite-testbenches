@@ -1,0 +1,120 @@
+[
+  {
+    "_comment": "usb1_device",
+    "name": "Device",
+    "bLength":                18,
+    "bDescriptorType":         1,
+    "bcdUSB":           "0x0100",
+    "bDeviceClass":          255,
+    "bDeviceSubClass":         0,
+    "bDeviceProtocol":       255,
+    "bMaxPacketSize0":        64,
+    "idVendor":         "0x1234",
+    "idProduct":        "0x5678",
+    "bcdDevice":        "0x0010",
+    "iManufacturer":           0,
+    "iProduct":                0,
+    "iSerial":                 0,
+    "bNumConfigurations":      1
+   },
+   {
+    "name": "Configuration",
+    "bLength":                 9,
+    "bDescriptorType":         2,
+    "wTotalLength":           53,
+    "bNumInterfaces":          1,
+    "bConfigurationValue":     1,
+    "iConfiguration":          0,
+    "bmAttributes":       "0x40",
+    "bMaxPower":               0,
+    "Interface": [
+      {
+        "bLength":                 9,
+        "bDescriptorType":         4,
+        "bInterfaceNumber":        0,
+        "bAlternateSetting":       0,
+        "bNumEndpoints":           5,
+        "bInterfaceClass":       255,
+        "bInterfaceSubClass":      1,
+        "bInterfaceProtocol":     255,
+        "iInterface":              0,
+        "Subdescriptors": [
+          {
+            "name":           "Endpoint",
+            "bLength":                 7,
+            "bDescriptorType":         5,
+            "bEndpointAddress":     [1, "IN"],
+            "bmAttributes": {
+              "Transfer": "Isochronous",
+              "Synch": "None",
+              "Usage": "Data"
+            },
+            "wMaxPacketSize":     "0x0100",
+            "bInterval":               1
+          },
+          {
+            "name":           "Endpoint",
+            "bLength":                 7,
+            "bDescriptorType":         5,
+            "bEndpointAddress":     [2, "OUT"],
+            "bmAttributes": {
+              "Transfer": "Isochronous",
+              "Synch": "None",
+              "Usage": "Data"
+            },
+            "wMaxPacketSize":     "0x0100",
+            "bInterval":               1
+          },
+          {
+            "name":           "Endpoint",
+            "bLength":                 7,
+            "bDescriptorType":         5,
+            "bEndpointAddress":     [3, "IN"],
+            "bmAttributes": {
+              "Transfer": "Bulk",
+              "Synch": "None",
+              "Usage": "Data"
+            },
+            "wMaxPacketSize":     "0x0040",
+            "bInterval":               1
+          },
+          {
+            "name":           "Endpoint",
+            "bLength":                 7,
+            "bDescriptorType":         5,
+            "bEndpointAddress":     [4, "OUT"],
+            "bmAttributes": {
+              "Transfer": "Bulk",
+              "Synch": "None",
+              "Usage": "Data"
+            },
+            "wMaxPacketSize":     "0x0040",
+            "bInterval":               1
+          },
+          {
+            "name":           "Endpoint",
+            "bLength":                 7,
+            "bDescriptorType":         5,
+            "bEndpointAddress":     [5, "IN"],
+            "bmAttributes": {
+              "Transfer": "Interrupt",
+              "Synch": "None",
+              "Usage": "Data"
+            },
+            "wMaxPacketSize":     "0x0040",
+            "bInterval":               1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "String",
+    "bDescriptorType": 3,
+    "0": ["0x0409"],
+    "0x0409" : {
+        "1": "0 gn"
+    }
+  }
+]
+

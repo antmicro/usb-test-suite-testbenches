@@ -1,0 +1,15 @@
+VERILOG_SOURCES += $(WPWD)/../ice40-playground/cores/usb/rtl/*.v \
+				   $(WPWD)/../yosys/techlibs/ice40/cells_sim.v \
+				   $(WPWD)/../ice40-playground/cores/misc/rtl/*.v \
+				   $(WPWD)/../ice40-playground/projects/riscv_usb/rtl/*.v
+COMPILE_ARGS += -I $(WPWD)/../ice40-playground/cores/usb/rtl
+
+sim:
+	rm -f results.xml
+	make -C ../ice40-playground/projects/riscv_usb CROSS=riscv64-unknown-elf fw/boot_app.hex
+	cp ../ice40-playground/projects/riscv_usb/fw/boot_app.hex boot.hex
+	../ice40-playground/cores/usb/utils/microcode.py > usb_trans_mc.hex
+	make results.xml
+
+clean::
+	rm usb_trans_mc.hex boot.hex
