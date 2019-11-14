@@ -1,3 +1,16 @@
+diff --git a/sw/include/usb-desc.h b/sw/include/usb-desc.h
+index c21334a..d72008f 100644
+--- a/sw/include/usb-desc.h
++++ b/sw/include/usb-desc.h
+@@ -63,7 +63,7 @@ struct usb_string_descriptor_struct {
+ #define MANUFACTURER_NAME         u"Foosn"
+ #define MANUFACTURER_NAME_LEN     sizeof(MANUFACTURER_NAME)
+ #if defined(CONFIG_FOMU_REV_PVT)
+-#define PRODUCT_NAME              u"Fomu PVT running DFU Bootloader " GIT_VERSION
++#define PRODUCT_NAME              u"Fomu PVT running DFU Bootloader "
+ #elif defined(CONFIG_FOMU_REV_DVT)
+ #define PRODUCT_NAME              u"Fomu DVT running DFU Bootloader " GIT_VERSION
+ #elif defined(CONFIG_FOMU_REV_EVT)
 diff --git a/sw/src/main.c b/sw/src/main.c
 index 05a1b3c..a822490 100644
 --- a/sw/src/main.c
