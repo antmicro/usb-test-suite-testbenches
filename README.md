@@ -20,6 +20,8 @@ make sim
 ```
 Test output is saved to `results.xml` file. Signal states are stored in `dump.vcd`.
 
+If you want to switch targets, make sure to run `make clean`.
+
 Basic options that can be set:
 * `TEST_SCRIPT` - name of script from the *tests* directory to be executed, without `.py` extension. Default is `test-enum`.
 * `TARGET` - IP core to be tested. Currently `valentyusb` (default), `usb1device` and `foboot` are supported.
@@ -27,6 +29,11 @@ Basic options that can be set:
 
 Other makefile targets:
 * `decode` - export USB transactions to a `usb.pcap` file to be viewed i.e. in Wireshark. USB line states are saved to `usb.vcd`.
+
+For example to run the Windows 10 enumeration test on Foboot core, use:
+```
+make TARGET=foboot TEST_SCRIPT=test-w10enum sim
+```
 
 ## Additional setup
 
