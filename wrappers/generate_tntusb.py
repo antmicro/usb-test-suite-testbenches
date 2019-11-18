@@ -24,6 +24,14 @@ _io = [
         Subsignal("pullup", Pins(1)),
         Subsignal("tx_en", Pins(1)),
     ),
+    # Wishbone
+    ("wishbone", 0, Subsignal("adr", Pins(30)), Subsignal("dat_r", Pins(32)),
+     Subsignal("dat_w",
+               Pins(32)), Subsignal("sel", Pins(4)), Subsignal("cyc", Pins(1)),
+     Subsignal("stb", Pins(1)), Subsignal("ack",
+                                          Pins(1)), Subsignal("we", Pins(1)),
+     Subsignal("cti", Pins(3)), Subsignal("bte",
+                                          Pins(2)), Subsignal("err", Pins(1))),
     (
         "clk",
         0,
@@ -142,15 +150,34 @@ class BaseSoC(SoCCore):
         # Deasserting tx_en should not be delayed
         self.comb += usb_pads.tx_en.eq(usb_tx_en & ~usb_tx_en_dut)
 
+        # SPI flash model supplied by tnt for simulation
+        platform.add_source("../ice40-playground/projects/riscv_usb/sim/spiflash.v")
+        spi_cs = Signal()
+        spi_clk = Signal()
+        spi_mosi = Signal()
+        spi_miso = Signal()
+        self.specials += Instance(
+            "spiflash",
+            i_csb=spi_cs,
+            i_clk=spi_clk,
+            io_io0=spi_mosi,
+            io_io1=spi_miso,
+            )
+
         platform.add_source("../ice40-playground/projects/riscv_usb/rtl/top.v")
         self.specials += Instance(
             "top",
             i_clk_in=self.crg.cd_sys.clk,
             i_ext_rst=~usb_reset,
+            # SPI
+            io_spi_mosi=spi_mosi,
+            io_spi_miso=spi_miso,
+            io_spi_flash_cs_n=spi_cs,
+            io_spi_clk=spi_clk,
             # USB lines
             io_usb_dp=usb_pads.d_p,
             io_usb_dn=usb_pads.d_n,
-            o_usb_pu=usb_pads.pullup
+            o_usb_pu=usb_pads.pullup,
             )
 
 
