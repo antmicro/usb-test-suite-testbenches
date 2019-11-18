@@ -58,7 +58,7 @@
     "0": ["0x0409"],
     "0x0409" : {
       "1":      "Foosn",
-      "2":      "Fomu Bootloader ",
+      "2":      "Fomu PVT running DFU Bootloader ",
       "0xEE": "MSFT100~"
     }
   },
