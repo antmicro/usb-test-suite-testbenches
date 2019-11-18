@@ -4,7 +4,7 @@ export PATH := $(WPWD)/../riscv64-unknown-elf-gcc-8.1.0-2019.01.0-x86_64-linux-u
 TARGET_DEPS = $(WPWD)/../foboot/sw/foboot.bin
 
 $(WPWD)/../foboot/sw/foboot.bin:
-	patch -b ../foboot/sw/src/main.c wrappers/foboot.patch
+	patch -d ../foboot/ -p1 <wrappers/foboot.patch
 	make -C ../foboot/sw
 
 sim: $(PWD)/dut.v
