@@ -93,8 +93,8 @@ class BaseSoC(SoCCore):
 
     SoCCore.mem_map = {
         "rom":  0x00010000,  # (default shadow @0x80000000)
-        "sram": 0x0001c000,  # (default shadow @0xa0000000)
-        "main_ram": 0x00000010,  # (default shadow @0xc0000000)
+        "sram": 0x00020000,  # (default shadow @0xa0000000)
+        "main_ram": 0x00030000,  # (default shadow @0xc0000000)
         "csr": 0xe0000000,
     }
 
@@ -106,7 +106,6 @@ class BaseSoC(SoCCore):
     def __init__(self,
                  platform,
                  output_dir="build",
-                 usb_variant='dummy',
                  **kwargs):
         kwargs['cpu_reset_address'] = 0x0
 
@@ -118,14 +117,11 @@ class BaseSoC(SoCCore):
         SoCCore.__init__(self,
                          platform,
                          clk_freq,
-                         cpu_type="picorv32",
-                         integrated_rom_size=0xbfff,
-                         integrated_sram_size=0x4000,
+                         integrated_rom_size= 0x000c000,
+                         integrated_sram_size=0x0004000,
                          integrated_main_ram_size=0x03f0,
-                         csr_address_width=14,
-                         csr_data_width=8,
                          with_uart=True,
-                         with_timer=False)
+                         **kwargs)
 
         # USB signals
         usb_p_tx = Signal()
