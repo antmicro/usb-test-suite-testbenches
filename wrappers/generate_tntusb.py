@@ -12,8 +12,9 @@ from migen.fhdl.structure import ResetSignal
 
 from litex.build.generic_platform import Pins, Subsignal
 from litex.build.sim.platform import SimPlatform
-from litex.soc.integration.soc_core import SoCCore
-from litex.soc.integration.builder import Builder
+from litex.soc.integration.soc_core import (soc_core_argdict, soc_core_args,
+                                            get_mem_data, SoCCore)
+from litex.soc.integration.builder import Builder, builder_args
 
 _io = [
     (
@@ -25,13 +26,27 @@ _io = [
         Subsignal("tx_en", Pins(1)),
     ),
     # Wishbone
-    ("wishbone", 0, Subsignal("adr", Pins(30)), Subsignal("dat_r", Pins(32)),
-     Subsignal("dat_w",
-               Pins(32)), Subsignal("sel", Pins(4)), Subsignal("cyc", Pins(1)),
-     Subsignal("stb", Pins(1)), Subsignal("ack",
-                                          Pins(1)), Subsignal("we", Pins(1)),
-     Subsignal("cti", Pins(3)), Subsignal("bte",
-                                          Pins(2)), Subsignal("err", Pins(1))),
+    (
+        "wishbone",
+        0,
+        Subsignal("adr", Pins(30)),
+        Subsignal("dat_r", Pins(32)),
+        Subsignal("dat_w", Pins(32)),
+        Subsignal("sel", Pins(4)),
+        Subsignal("cyc", Pins(1)),
+        Subsignal("stb", Pins(1)),
+        Subsignal("ack", Pins(1)),
+        Subsignal("we", Pins(1)),
+        Subsignal("cti", Pins(3)),
+        Subsignal("bte", Pins(2)),
+        Subsignal("err", Pins(1))
+    ),
+
+    (
+        "serial", 0,
+        Subsignal("tx", Pins("D10")),
+        Subsignal("rx", Pins("A9"))
+    ),
     (
         "clk",
         0,
@@ -76,6 +91,13 @@ class BaseSoC(SoCCore):
         "usb": 9,
     }
 
+    SoCCore.mem_map = {
+        "rom":  0x00010000,  # (default shadow @0x80000000)
+        "sram": 0x0001c000,  # (default shadow @0xa0000000)
+        "main_ram": 0x00000010,  # (default shadow @0xc0000000)
+        "csr": 0xe0000000,
+    }
+
     interrupt_map = {
         "usb": 3,
     }
@@ -86,8 +108,7 @@ class BaseSoC(SoCCore):
                  output_dir="build",
                  usb_variant='dummy',
                  **kwargs):
-        # Disable integrated RAM as we'll add it later
-        self.integrated_sram_size = 0
+        kwargs['cpu_reset_address'] = 0x0
 
         self.output_dir = output_dir
 
@@ -97,13 +118,13 @@ class BaseSoC(SoCCore):
         SoCCore.__init__(self,
                          platform,
                          clk_freq,
-                         cpu_type=None,
-                         integrated_rom_size=0x0,
-                         integrated_sram_size=0x0,
-                         integrated_main_ram_size=0x0,
+                         cpu_type="picorv32",
+                         integrated_rom_size=0xbfff,
+                         integrated_sram_size=0x4000,
+                         integrated_main_ram_size=0x03f0,
                          csr_address_width=14,
                          csr_data_width=8,
-                         with_uart=False,
+                         with_uart=True,
                          with_timer=False)
 
         # USB signals
@@ -138,10 +159,10 @@ class BaseSoC(SoCCore):
 
         self.comb += usb_tx_en.eq(~usb_tx_en_dut)
         # Delay USB_TX_EN line
-        for i in range(4):
-            tx_en_tmp = Signal()
-            self.sync.sys += tx_en_tmp.eq(usb_tx_en)
-            usb_tx_en = tx_en_tmp
+        #for i in range(4):
+        #    tx_en_tmp = Signal()
+        #    self.sync.sys += tx_en_tmp.eq(usb_tx_en)
+        #    usb_tx_en = tx_en_tmp
 
         self.comb += usb_reset.eq(~self.crg.cd_sys.rst)
         # Assign pads to triple
@@ -150,54 +171,85 @@ class BaseSoC(SoCCore):
         # Deasserting tx_en should not be delayed
         self.comb += usb_pads.tx_en.eq(usb_tx_en & ~usb_tx_en_dut)
 
-        # SPI flash model supplied by tnt for simulation
-        platform.add_source("../ice40-playground/projects/riscv_usb/sim/spiflash.v")
-        spi_cs = Signal()
-        spi_clk = Signal()
-        spi_mosi = Signal()
-        spi_miso = Signal()
-        self.specials += Instance(
-            "spiflash",
-            i_csb=spi_cs,
-            i_clk=spi_clk,
-            io_io0=spi_mosi,
-            io_io1=spi_miso,
-            )
+        class _WishboneBridge(Module):
+            def __init__(self, interface):
+                self.wishbone = interface
 
-        platform.add_source("../ice40-playground/projects/riscv_usb/rtl/top.v")
-        self.specials += Instance(
-            "top",
-            i_clk_in=self.crg.cd_sys.clk,
-            i_ext_rst=~usb_reset,
-            # SPI
-            io_spi_mosi=spi_mosi,
-            io_spi_miso=spi_miso,
-            io_spi_flash_cs_n=spi_cs,
-            io_spi_clk=spi_clk,
-            # USB lines
-            io_usb_dp=usb_pads.d_p,
-            io_usb_dn=usb_pads.d_n,
-            o_usb_pu=usb_pads.pullup,
-            )
+        self.submodules.wb = _WishboneBridge(
+                self.platform.request("wishbone"))
+        self.add_wb_master(self.wb.wishbone)
 
+        # USB Core
+        #         EP Buffer
+        ep_tx_addr_0 = Signal(9)
+        ep_tx_data_0 = Signal(32)
+        ep_tx_we_0 = Signal()
 
-def generate(output_dir, csr_csv):
-    platform = Platform()
-    soc = BaseSoC(platform,
-                  cpu_type=None,
-                  cpu_variant=None,
-                  output_dir=output_dir)
-    builder = Builder(soc,
-                      output_dir=output_dir,
-                      csr_csv=csr_csv,
-                      compile_software=False)
-    vns = builder.build(run=False)
-    soc.do_exit(vns)
+        ep_rx_addr_0 = Signal(9)
+        ep_rx_data_1 = Signal(32)
+        ep_rx_re_0 = Signal()
+
+        ep_tx_addr_0 = self.wb.wishbone.adr
+        ep_tx_data_0 = self.wb.wishbone.dat_w
+        ep_tx_we_0 = self.wb.wishbone.we & ~self.wb.wishbone.ack & self.wb.wishbone.cyc  # ???
+
+        ep_rx_addr_0 = self.wb.wishbone.adr
+        ep_rx_data_1 = self.wb.wishbone.dat_r  # ???
+        ep_rx_re_0 = 1
+
+        #     Bus interface
+        ub_addr = Signal(12)
+        ub_wdata = Signal(16)
+        ub_rdata = Signal(16)
+        ub_cyc = Signal()
+        ub_we = Signal()
+        ub_ack = Signal()
+
+        ub_addr = self.wb.wishbone.adr
+        ub_wdata = self.wb.wishbone.dat_w
+        ub_rdata = self.wb.wishbone.dat_r
+        ub_cyc = self.wb.wishbone.cyc
+        ub_we = self.wb.wishbone.we
+        ub_ack = self.wb.wishbone.ack
+
+        #     Core
+        platform.add_source("../ice40-playground/cores/usb/rtl/usb.v")
+        self.specials += Instance("usb",
+                                  p_EPDW=32,
+                                  # Pads
+                                  io_pad_dp=usb_pads.d_p,
+                                  io_pad_dn=usb_pads.d_n,
+                                  o_pad_pu=usb_pads.pullup,
+                                  # EP buffer interface
+                                  i_ep_tx_addr_0=ep_tx_addr_0,
+                                  i_ep_tx_data_0=ep_tx_data_0,
+                                  i_ep_tx_we_0=ep_tx_we_0,
+                                  i_ep_rx_addr_0=ep_rx_addr_0,
+                                  o_ep_rx_data_1=ep_rx_data_1,
+                                  i_ep_rx_re_0=ep_rx_re_0,
+                                  i_ep_clk=self.crg.cd_sys.clk,
+                                  # Bus interface
+                                  i_bus_addr=ub_addr,
+                                  i_bus_din=ub_wdata,
+                                  o_bus_dout=ub_rdata,
+                                  i_bus_cyc=ub_cyc,
+                                  i_bus_we=ub_we,
+                                  o_bus_ack=ub_ack,
+                                  # IRQ
+                                  # output wire irq,
+                                  # SOF indication
+                                  # output wire sof,
+                                  # Common
+                                  i_clk=self.crg.cd_sys.clk,
+                                  i_rst=self.crg.cd_sys.rst
+                                  )
 
 
 def main():
     parser = argparse.ArgumentParser(
         description="Build test file for dummy or eptri module")
+    builder_args(parser)
+    soc_core_args(parser)
     parser.add_argument('--dir',
                         metavar='DIRECTORY',
                         default='build',
@@ -206,9 +258,23 @@ def main():
                         metavar='CSR',
                         default='csr.csv',
                         help='csr file (default: %(default)s)')
+    parser.add_argument("--rom-init", default=None, help="rom_init file")
     args = parser.parse_args()
+
+    soc_kwargs = soc_core_argdict(args)
+    if args.rom_init is not None:
+        soc_kwargs["integrated_rom_init"] = \
+            get_mem_data(args.rom_init, endianness='little')
     output_dir = args.dir
-    generate(output_dir, args.csr)
+
+    platform = Platform()
+    soc = BaseSoC(platform, **soc_kwargs)
+    builder = Builder(soc,
+                      output_dir=output_dir,
+                      csr_csv=args.csr,
+                      compile_software=False)
+    vns = builder.build(run=False)
+    soc.do_exit(vns)
 
     print("""Simulation build complete.  Output files:
     {}/gateware/dut.v               Source Verilog file. Run this under Cocotb.
