@@ -16,6 +16,7 @@ model = UsbDevice(descriptorFile)
 @cocotb.test()
 def test_enumeration(dut):
     harness = get_harness(dut)
+    harness.max_packet_size = model.deviceDescriptor.bMaxPacketSize0
     yield harness.reset()
     yield harness.connect()
 
