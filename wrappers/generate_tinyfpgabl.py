@@ -2,24 +2,59 @@
 # This script generates dut.v file for testing TinyFPGA Bootloader
 
 # Disable pylint's E1101, which breaks completely on migen
-#pylint:disable=E1101
+# pylint:disable=E1101
 
 from migen import Module, Signal, Instance, ClockDomain, If
-from migen.genlib.resetsync import AsyncResetSynchronizer
 from migen.fhdl.specials import TSTriple
-from migen.fhdl.bitcontainer import bits_for
-from migen.fhdl.structure import ClockSignal, ResetSignal, Replicate, Cat
-from migen.genlib.cdc import MultiReg
+from migen.fhdl.structure import ResetSignal
 
-from litex.build.generic_platform import Pins, IOStandard, Misc, Subsignal
+from litex.build.generic_platform import Pins, Subsignal
+from litex.build.sim.platform import SimPlatform
 from litex.soc.integration.builder import Builder
 from litex.soc.integration.soc_core import SoCCore
-from litex.soc.interconnect import wishbone
-from litex.soc.interconnect.csr import AutoCSR, CSRStatus, CSRStorage
 
-from platform_dut import *
 import argparse
-import os
+
+_io = [
+    # Wishbone
+    ("wishbone", 0,
+        Subsignal("adr",   Pins(30)),
+        Subsignal("dat_r", Pins(32)),
+        Subsignal("dat_w", Pins(32)),
+        Subsignal("sel",   Pins(4)),
+        Subsignal("cyc",   Pins(1)),
+        Subsignal("stb",   Pins(1)),
+        Subsignal("ack",   Pins(1)),
+        Subsignal("we",    Pins(1)),
+        Subsignal("cti",   Pins(3)),
+        Subsignal("bte",   Pins(2)),
+        Subsignal("err",   Pins(1))
+     ),
+    ("usb", 0,
+        Subsignal("d_p", Pins(1)),
+        Subsignal("d_n", Pins(1)),
+        Subsignal("pullup", Pins(1)),
+        Subsignal("tx_en", Pins(1)),
+     ),
+    ("clk", 0,
+        Subsignal("clk48", Pins(1)),
+        Subsignal("clk12", Pins(1)),
+        Subsignal("clk16", Pins(1)),
+     ),
+    ("reset", 0, Pins(1)),
+]
+
+_connectors = []
+
+
+class Platform(SimPlatform):
+    def __init__(self, toolchain="verilator"):
+        SimPlatform.__init__(self, "sim", _io, _connectors,
+                             toolchain="verilator")
+
+    def create_programmer(self):
+        raise ValueError("programming is not supported")
+
 
 class _CRG(Module):
     def __init__(self, platform):
@@ -70,7 +105,7 @@ class BaseSoC(SoCCore):
     }
     interrupt_map.update(SoCCore.interrupt_map)
 
-    def __init__(self, platform, output_dir="build", usb_variant='dummy', **kwargs):
+    def __init__(self, platform, output_dir="build", **kwargs):
         # Disable integrated RAM as we'll add it later
         self.integrated_sram_size = 0
 
@@ -79,13 +114,13 @@ class BaseSoC(SoCCore):
         clk_freq = int(12e6)
         self.submodules.crg = _CRG(platform)
 
-        SoCCore.__init__(self, platform, clk_freq, 
-            cpu_type=None,
-            integrated_rom_size=0x0,
-            integrated_sram_size=0x0,
-            integrated_main_ram_size=0x0,
-            csr_address_width=14, csr_data_width=8,
-            with_uart=False, with_timer=False)
+        SoCCore.__init__(self, platform, clk_freq,
+                         cpu_type=None,
+                         integrated_rom_size=0x0,
+                         integrated_sram_size=0x0,
+                         integrated_main_ram_size=0x0,
+                         csr_address_width=14, csr_data_width=8,
+                         with_uart=False, with_timer=False)
 
         # USB signals
         usb_p_tx = Signal()
@@ -93,7 +128,6 @@ class BaseSoC(SoCCore):
         usb_p_rx = Signal()
         usb_n_rx = Signal()
         usb_tx_en = Signal()
-        usb_pullup = Signal() # 1
 
         usb_p_t = TSTriple()
         usb_n_t = TSTriple()
@@ -105,7 +139,7 @@ class BaseSoC(SoCCore):
             If(usb_tx_en,
                 usb_p_rx.eq(0b1),
                 usb_n_rx.eq(0b0),
-            ).Else(
+               ).Else(
                 usb_p_rx.eq(usb_p_t.i),
                 usb_n_rx.eq(usb_n_t.i),
             ),
@@ -123,46 +157,44 @@ class BaseSoC(SoCCore):
 
         platform.add_source("../tinyfpga/common/tinyfpga_bootloader.v")
         self.specials += Instance("tinyfpga_bootloader",
-                                    i_clk_48mhz = self.crg.cd_usb_48.clk,
-                                    i_clk = self.crg.cd_usb_48.clk,
-                                    i_reset = self.crg.cd_sys.rst,
-                                    # USB lines
-                                    o_usb_p_tx = usb_p_tx,
-                                    o_usb_n_tx = usb_n_tx,
-                                    i_usb_p_rx = usb_p_rx,
-                                    i_usb_n_rx = usb_n_rx,
-                                    o_usb_tx_en = usb_tx_en
-                                    )
-
+                                  i_clk_48mhz=self.crg.cd_usb_48.clk,
+                                  i_clk=self.crg.cd_usb_48.clk,
+                                  i_reset=self.crg.cd_sys.rst,
+                                  # USB lines
+                                  o_usb_p_tx=usb_p_tx,
+                                  o_usb_n_tx=usb_n_tx,
+                                  i_usb_p_rx=usb_p_rx,
+                                  i_usb_n_rx=usb_n_rx,
+                                  o_usb_tx_en=usb_tx_en
+                                  )
 
 
 def main():
     parser = argparse.ArgumentParser(
         description="Build test file for dummy or eptri module")
     parser.add_argument('--dir', metavar='DIRECTORY',
-                                 default='build',
-                                 help='Output directory (defauilt: %(default)s)' )
+                        default='build',
+                        help='Output directory (default: %(default)s)')
     parser.add_argument('--csr', metavar='CSR',
-                                 default='csr.csv',
-                                 help='csr file (default: %(default)s)')
+                        default='csr.csv',
+                        help='csr file (default: %(default)s)')
     args = parser.parse_args()
-    add_fsm_state_names()
     output_dir = args.dir
 
     platform = Platform()
     soc = BaseSoC(platform,
-                            cpu_type=None, cpu_variant=None,
-                            output_dir=output_dir)
+                  cpu_type=None, cpu_variant=None,
+                  output_dir=output_dir)
     builder = Builder(soc, output_dir=output_dir,
-                           csr_csv=args.csr,
-                           compile_software=False)
+                      csr_csv=args.csr,
+                      compile_software=False)
     vns = builder.build(run=False)
     soc.do_exit(vns)
 
-    print(
-"""Simulation build complete.  Output files:
-    {}/gateware/dut.v               Source Verilog file.  Run this under Cocotb.
+    print("""Simulation build complete.  Output files:
+    {}/gateware/dut.v               Source Verilog file. Run this under Cocotb.
 """.format(output_dir))
+
 
 if __name__ == "__main__":
     main()
