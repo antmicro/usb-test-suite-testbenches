@@ -44,10 +44,10 @@ def test_control_transfer_in(dut):
     yield harness.set_device_address(DEVICE_ADDRESS)
     yield harness.control_transfer_in(
         DEVICE_ADDRESS,
-        getDescriptorRequest(descriptor_type=Descriptor.Types.STRING,
-                             descriptor_index=0,
+        getDescriptorRequest(descriptor_type=Descriptor.Types.DEVICE,
+                             descriptor_index=1,
                              lang_id=0,
-                             length=10), model.stringDescriptor[0].get())
+                             length=18), model.deviceDescriptor.get())
 
 
 @cocotb.test()
