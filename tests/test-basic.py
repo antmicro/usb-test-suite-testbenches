@@ -3,7 +3,6 @@
 from os import environ
 
 import cocotb
-from cocotb.clock import Timer
 from cocotb.utils import get_sim_time
 from cocotb_usb.harness import get_harness
 from cocotb_usb.device import UsbDevice
@@ -38,7 +37,7 @@ def test_control_transfer_in(dut):
     harness = get_harness(dut)
     yield harness.reset()
     yield harness.connect()
-    yield Timer(1e3, units="us")
+    yield harness.wait(1e3, units="us")
 
     DEVICE_ADDRESS = 20
     yield harness.set_device_address(DEVICE_ADDRESS)
@@ -55,7 +54,7 @@ def test_sof_stuffing(dut):
     harness = get_harness(dut)
     yield harness.reset()
     yield harness.connect()
-    yield Timer(1e3, units="us")
+    yield harness.wait(1e3, units="us")
 
     yield harness.host_send_sof(0x04ff)
     yield harness.host_send_sof(0x0512)
@@ -68,7 +67,7 @@ def test_sof_is_ignored(dut):
     harness = get_harness(dut)
     yield harness.reset()
     yield harness.connect()
-    yield Timer(1e3, units="us")
+    yield harness.wait(1e3, units="us")
 
     DEVICE_ADDRESS = 0x20
     epaddr_out = EndpointType.epaddr(0, EndpointType.OUT)
@@ -112,12 +111,12 @@ def test_control_setup_clears_stall(dut):
     harness = get_harness(dut)
     yield harness.reset()
     yield harness.connect()
-    yield Timer(1e3, units="us")
+    yield harness.wait(1e3, units="us")
 
     addr = 13
     yield harness.set_device_address(addr)
     yield harness.set_configuration(1)
-    yield Timer(1e2, units="us")
+    yield harness.wait(1e2, units="us")
 
     epaddr_out = EndpointType.epaddr(0, EndpointType.OUT)
 
@@ -158,7 +157,7 @@ def test_control_transfer_in_out(dut):
     harness = get_harness(dut)
     yield harness.reset()
     yield harness.connect()
-    yield Timer(1e3, units="us")
+    yield harness.wait(1e3, units="us")
 
     DEVICE_ADDRESS = 20
     yield harness.set_device_address(DEVICE_ADDRESS)
@@ -182,7 +181,7 @@ def test_control_transfer_in_out_in(dut):
     harness = get_harness(dut)
     yield harness.reset()
     yield harness.connect()
-    yield Timer(1e3, units="us")
+    yield harness.wait(1e3, units="us")
 
     device_address = 0  # After reset
     yield harness.control_transfer_in(
@@ -213,7 +212,7 @@ def test_control_transfer_out_in(dut):
     harness = get_harness(dut)
     yield harness.reset()
     yield harness.connect()
-    yield Timer(1e3, units="us")
+    yield harness.wait(1e3, units="us")
 
     DEVICE_ADDRESS = 20
     yield harness.set_device_address(

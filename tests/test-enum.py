@@ -1,5 +1,4 @@
 import cocotb
-from cocotb.clock import Timer
 
 from cocotb_usb.harness import get_harness
 from cocotb_usb.device import UsbDevice
@@ -20,7 +19,7 @@ def test_enumeration(dut):
     yield harness.reset()
     yield harness.connect()
 
-    yield Timer(1e3, units="us")
+    yield harness.wait(1e3, units="us")
 
     yield harness.port_reset(1e3)
     yield harness.get_device_descriptor(response=model.deviceDescriptor.get())
