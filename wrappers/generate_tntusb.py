@@ -94,7 +94,7 @@ class BaseSoC(SoCCore):
     SoCCore.mem_map = {
         "rom":  0x00010000,  # (default shadow @0x80000000)
         "sram": 0x00020000,  # (default shadow @0xa0000000)
-        "main_ram": 0x00030000,  # (default shadow @0xc0000000)
+        "main_ram": 0x00000000,  # (default shadow @0xc0000000)
         "csr": 0xe0000000,
     }
 
@@ -119,9 +119,12 @@ class BaseSoC(SoCCore):
                          clk_freq,
                          integrated_rom_size= 0x000c000,
                          integrated_sram_size=0x0004000,
-                         integrated_main_ram_size=0x03f0,
+                         integrated_main_ram_size=0x0400,
                          with_uart=True,
                          **kwargs)
+
+        # Modify stack address for FW
+        self.cpu.cpu_params.update(p_STACKADDR=0x00000400)
 
         # USB signals
         usb_p_tx = Signal()
