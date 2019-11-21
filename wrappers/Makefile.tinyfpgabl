@@ -1,0 +1,2 @@
+VERILOG_SOURCES += $(WPWD)/../tinyfpga/common/*.v
+#COMPILE_ARGS += -I $(WPWD)/../tinyfpga/common/*.v

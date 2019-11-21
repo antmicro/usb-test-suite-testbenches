@@ -1,0 +1,119 @@
+[
+  {
+    "_comment": "TinyFPGA Bootloader",
+    "name": "Device",
+    "bLength":                18,
+    "bDescriptorType":         1,
+    "bcdUSB":           "0x0200",
+    "bDeviceClass":       "0x02",
+    "bDeviceSubClass":         0,
+    "bDeviceProtocol":         0,
+    "bMaxPacketSize0":        32,
+    "idVendor":         "0x1d50",
+    "idProduct":        "0x6130",
+    "bcdDevice":        "0x0000",
+    "iManufacturer":           0,
+    "iProduct":                0,
+    "iSerial":                 0,
+    "bNumConfigurations":      1
+   },
+   {
+    "name": "Configuration",
+    "bLength":                 9,
+    "bDescriptorType":         2,
+    "wTotalLength":           67,
+    "bNumInterfaces":          2,
+    "bConfigurationValue":     1,
+    "iConfiguration":          0,
+    "bmAttributes":       "0xc0",
+    "bMaxPower":              50,
+    "Interface": [
+      {
+        "name": "CDC Interface 1",
+        "bLength":                 9,
+        "bDescriptorType":         4,
+        "bInterfaceNumber":        0,
+        "bAlternateSetting":       0,
+        "bNumEndpoints":           1,
+        "bInterfaceClass":         2,
+        "bInterfaceSubClass":      2,
+        "bInterfaceProtocol":      1,
+        "iInterface":              0,
+        "Subdescriptors": [
+          {
+            "name": "Header Functional",
+            "bLength":                5,
+            "bDescriptorType":   "0x24",
+            "bDescriptorSubtype":     0,
+            "bcdCDC":          "0x0110"
+          },
+          {
+            "name": "Call Management Functional",
+            "bLength":                         5,
+            "bDescriptorType":            "0x24",
+            "bDescriptorSubtype":              1,
+            "bmCapabilities":                  0,
+            "bDataInterface":                  1
+          },
+          {
+            "name":  "ACM Functional",
+            "bLength":              4,
+            "bDescriptorType": "0x24",
+            "bDescriptorSubtype":   2,
+            "bmCapabilities":       6
+          },
+          {
+            "name": "Union Functional",
+            "bLength":               5,
+            "bDescriptorType":  "0x24",
+            "bDescriptorSubtype":    6,
+            "bMasterInterface":      0,
+            "bSlaveInterface":   [ 1 ]
+          },
+          {
+            "name":           "Endpoint",
+            "bLength":                 7,
+            "bDescriptorType":         5,
+            "bEndpointAddress":   "0x82",
+            "bmAttributes":       "0x03",
+            "wMaxPacketSize":   "0x0008",
+            "bInterval":              64
+          }
+        ]
+      },
+      {
+        "name": "CDC Interface 1 data",
+        "bLength":                   9,
+        "bDescriptorType":           4,
+        "bInterfaceNumber":          1,
+        "bAlternateSetting":         0,
+        "bNumEndpoints":             2,
+        "bInterfaceClass":      "0x0A",
+        "bInterfaceSubClass":        0,
+        "bInterfaceProtocol":        0,
+        "iInterface":                0,
+        "Subdescriptors": [
+          {
+            "name":           "Endpoint",
+            "bLength":                 7,
+            "bDescriptorType":         5,
+            "bEndpointAddress":   "0x01",
+            "bmAttributes":       "0x02",
+            "wMaxPacketSize":   "0x0020",
+            "bInterval":               0
+          },
+          {
+            "name":           "Endpoint",
+            "bLength":                 7,
+            "bDescriptorType":         5,
+            "bEndpointAddress":   "0x81",
+            "bmAttributes":       "0x02",
+            "wMaxPacketSize":   "0x0020",
+            "bInterval":               0
+          }
+        ]
+      }
+    ]
+  }
+]
+

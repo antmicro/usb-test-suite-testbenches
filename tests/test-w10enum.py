@@ -1,7 +1,6 @@
 from os import environ
 
 import cocotb
-from cocotb.clock import Timer
 
 from cocotb_usb.harness import get_harness
 from cocotb_usb.device import UsbDevice
@@ -15,9 +14,10 @@ model = UsbDevice(DESCRIPTOR_FILE)
 @cocotb.test()
 def test_enumeration_w10(dut):
     harness = get_harness(dut)
+    harness.max_packet_size = model.deviceDescriptor.bMaxPacketSize0
     yield harness.reset()
     yield harness.connect()
-    yield Timer(1e3, units="us")
+    yield harness.wait(1e3, units="us")
 
     yield harness.port_reset(1e3)
     yield harness.get_device_descriptor(length=0x40,

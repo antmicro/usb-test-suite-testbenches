@@ -1,7 +1,7 @@
 from os import environ
 
 import cocotb
-from cocotb.clock import Clock, Timer
+from cocotb.clock import Clock
 
 from cocotb_usb.harness import get_harness
 from cocotb_usb.device import UsbDevice
@@ -22,7 +22,7 @@ def test_accurate(dut):
     yield harness.reset()
     yield harness.connect()
 
-    yield Timer(1e3, units="us")
+    yield harness.wait(1e3, units="us")
 
     yield harness.get_device_descriptor(model.deviceDescriptor.get())
 
@@ -37,7 +37,7 @@ def test_drift(dut):
     yield harness.reset()
     yield harness.connect()
 
-    yield Timer(1e3, units="us")
+    yield harness.wait(1e3, units="us")
 
     yield harness.get_device_descriptor(model.deviceDescriptor.get())
 
@@ -52,6 +52,6 @@ def test_jitter(dut):
     yield harness.reset()
     yield harness.connect()
 
-    yield Timer(1e3, units="us")
+    yield harness.wait(1e3, units="us")
 
     yield harness.get_device_descriptor(model.deviceDescriptor.get())

@@ -1,5 +1,4 @@
 import cocotb
-from cocotb.clock import Timer
 
 from cocotb_usb.harness import get_harness
 from cocotb_usb.device import UsbDevice
@@ -17,10 +16,11 @@ model = UsbDevice(descriptorFile)
 @cocotb.test()
 def test_enumeration(dut):
     harness = get_harness(dut)
+    harness.max_packet_size = model.deviceDescriptor.bMaxPacketSize0
     yield harness.reset()
     yield harness.connect()
 
-    yield Timer(1e3, units="us")
+    yield harness.wait(1e3, units="us")
 
     yield harness.port_reset(1e3)
     yield harness.get_device_descriptor(response=model.deviceDescriptor.get())
@@ -36,18 +36,28 @@ def test_enumeration(dut):
         length=total_config_len,
         response=model.configDescriptor[1].get()[:total_config_len])
 
-    yield harness.get_string_descriptor(
-        lang_id=Descriptor.LangId.UNSPECIFIED,
-        idx=0,
-        response=model.stringDescriptor[0].get())
+    # Does the device report any string descriptors?
+    str_to_check = []
+    for idx in (
+                model.deviceDescriptor.iManufacturer,
+                model.deviceDescriptor.iProduct,
+                model.deviceDescriptor.iSerialNumber):
+        if idx != 0:
+            str_to_check.append(idx)
 
-    if model.stringDescriptor[0].wLangId:
-        # If the device implements string descriptors, let's try reading them
-        lang_id = model.stringDescriptor[0].wLangId[0]
+    # If the device implements string descriptors, let's try reading them
+    if str_to_check != []:
         yield harness.get_string_descriptor(
-            lang_id=lang_id,
-            idx=1,
-            response=model.stringDescriptor[lang_id][1].get())
+          lang_id=Descriptor.LangId.UNSPECIFIED,
+          idx=0,
+          response=model.stringDescriptor[0].get())
+
+        lang_id = model.stringDescriptor[0].wLangId[0]
+        for idx in str_to_check:
+            yield harness.get_string_descriptor(
+                lang_id=lang_id,
+                idx=idx,
+                response=model.stringDescriptor[lang_id][1].get())
 
     yield harness.set_configuration(1)
     # Device should now be in "Configured" state
