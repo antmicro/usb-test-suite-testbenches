@@ -127,44 +127,7 @@ class BaseSoC(SoCCore):
         # Modify stack address for FW
         self.cpu.cpu_params.update(p_STACKADDR=0x00000400)
 
-        # USB signals
-        usb_p_tx = Signal()
-        usb_n_tx = Signal()
-        usb_p_rx = Signal()
-        usb_n_rx = Signal()
-        usb_tx_en = Signal()
-        usb_tx_en_dut = Signal()
-        usb_reset = Signal()
-
-        usb_p_t = TSTriple()
-        usb_n_t = TSTriple()
-
         usb_pads = platform.request("usb")
-
-        # Assign signals to triple
-        self.comb += [
-            If(
-                ~usb_tx_en_dut,
-                usb_p_rx.eq(0b1),
-                usb_n_rx.eq(0b0),
-            ).Else(
-                usb_p_rx.eq(usb_p_t.i),
-                usb_n_rx.eq(usb_n_t.i),
-            ),
-            usb_p_t.oe.eq(~usb_tx_en_dut),
-            usb_n_t.oe.eq(~usb_tx_en_dut),
-            usb_p_t.o.eq(usb_p_tx),
-            usb_n_t.o.eq(usb_n_tx),
-        ]
-
-        self.comb += usb_tx_en.eq(~usb_tx_en_dut)
-
-        self.comb += usb_reset.eq(~self.crg.cd_sys.rst)
-        # Assign pads to triple
-        self.specials += usb_p_t.get_tristate(usb_pads.d_p)
-        self.specials += usb_n_t.get_tristate(usb_pads.d_n)
-        # Deasserting tx_en should not be delayed
-        self.comb += usb_pads.tx_en.eq(usb_tx_en & ~usb_tx_en_dut)
 
         # USB IP core bus interface (wb[4] in riscv project)
         self.wb_ub = wishbone.Interface()
