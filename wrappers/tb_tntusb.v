@@ -14,7 +14,7 @@ module tb(
 
 assign clkdiff = clk48_host ^ clk48_device;
 pulldown(usb_d_n);
-pulldown(usb_d_p);
+pullup(usb_d_p);
 
 dut dut (
 	.clk_clk48(clk48_device),
