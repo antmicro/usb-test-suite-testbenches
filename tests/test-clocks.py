@@ -24,6 +24,12 @@ def test_accurate(dut):
 
     yield harness.wait(1e3, units="us")
 
+    yield harness.port_reset(10e3)
+    yield harness.connect()
+    yield harness.wait(1e3, units="us")
+    # After waiting (bus inactivity) let's start with SOF
+    yield harness.host_send_sof(0x01)
+
     yield harness.get_device_descriptor(model.deviceDescriptor.get())
 
 
@@ -39,6 +45,12 @@ def test_drift(dut):
 
     yield harness.wait(1e3, units="us")
 
+    yield harness.port_reset(10e3)
+    yield harness.connect()
+    yield harness.wait(1e3, units="us")
+    # After waiting (bus inactivity) let's start with SOF
+    yield harness.host_send_sof(0x01)
+
     yield harness.get_device_descriptor(model.deviceDescriptor.get())
 
 
@@ -53,5 +65,10 @@ def test_jitter(dut):
     yield harness.connect()
 
     yield harness.wait(1e3, units="us")
+    yield harness.port_reset(10e3)
+    yield harness.connect()
+    yield harness.wait(1e3, units="us")
+    # After waiting (bus inactivity) let's start with SOF
+    yield harness.host_send_sof(0x01)
 
     yield harness.get_device_descriptor(model.deviceDescriptor.get())

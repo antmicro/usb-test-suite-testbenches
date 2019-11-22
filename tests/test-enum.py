@@ -18,14 +18,19 @@ def test_enumeration(dut):
     harness = get_harness(dut)
     harness.max_packet_size = model.deviceDescriptor.bMaxPacketSize0
     yield harness.reset()
-    yield harness.connect()
-
     yield harness.wait(1e3, units="us")
 
-    yield harness.port_reset(1e3)
+    yield harness.port_reset(10e3)
+    yield harness.connect()
+    yield harness.wait(1e3, units="us")
+    # After waiting (bus inactivity) let's start with SOF
+    yield harness.host_send_sof(0x01)
     yield harness.get_device_descriptor(response=model.deviceDescriptor.get())
 
     yield harness.set_device_address(DEVICE_ADDRESS)
+    # There is a longish recovery period after setting address, so let's send
+    # a SOF to make sure DUT doesn't suspend
+    yield harness.host_send_sof(0x02)
     yield harness.get_configuration_descriptor(
         length=9,
         # Device must implement at least one configuration
@@ -57,7 +62,7 @@ def test_enumeration(dut):
             yield harness.get_string_descriptor(
                 lang_id=lang_id,
                 idx=idx,
-                response=model.stringDescriptor[lang_id][1].get())
+                response=model.stringDescriptor[lang_id][idx].get())
 
     yield harness.set_configuration(1)
     # Device should now be in "Configured" state
