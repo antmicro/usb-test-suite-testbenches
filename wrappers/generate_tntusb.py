@@ -161,6 +161,11 @@ class BaseSoC(SoCCore):
                 )
         ep_rx_re_0 = 1
 
+        # Automatic ACK with 1 cycle delay
+        ack_tmp = Signal()
+        self.sync.sys += ack_tmp.eq(self.wb_ep.cyc & ~self.wb_ep.ack)
+        self.wb_ep.ack = ack_tmp
+
         #     Bus interface
         ub_addr = Signal(12)
         ub_wdata = Signal(16)
