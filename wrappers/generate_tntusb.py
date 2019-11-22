@@ -118,7 +118,7 @@ class BaseSoC(SoCCore):
         SoCCore.__init__(self,
                          platform,
                          clk_freq,
-                         integrated_rom_size= 0x000c000,
+                         integrated_rom_size=0x000c000,
                          integrated_sram_size=0x0004000,
                          integrated_main_ram_size=0x0400,
                          with_uart=True,
@@ -158,11 +158,6 @@ class BaseSoC(SoCCore):
         ]
 
         self.comb += usb_tx_en.eq(~usb_tx_en_dut)
-        # Delay USB_TX_EN line
-        #for i in range(4):
-        #    tx_en_tmp = Signal()
-        #    self.sync.sys += tx_en_tmp.eq(usb_tx_en)
-        #    usb_tx_en = tx_en_tmp
 
         self.comb += usb_reset.eq(~self.crg.cd_sys.rst)
         # Assign pads to triple
