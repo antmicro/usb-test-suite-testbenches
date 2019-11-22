@@ -10,6 +10,7 @@ export PATH := $(WPWD)/../riscv64-unknown-elf-gcc-8.1.0-2019.01.0-x86_64-linux-u
 TARGET_DEPS = $(WPWD)/../ice40-playground/projects/riscv_usb/fw/fw_app.bin
 
 $(WPWD)/../ice40-playground/projects/riscv_usb/fw/fw_app.bin:
+	patch -d ../ice40-playground/ -p1 <wrappers/tntusb.patch
 	make -C ../ice40-playground/projects/riscv_usb/fw CROSS=riscv64-unknown-elf- fw_app.hex
 
 sim: $(PWD)/dut.v
