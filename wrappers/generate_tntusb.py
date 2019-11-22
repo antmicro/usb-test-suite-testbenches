@@ -15,6 +15,7 @@ from litex.build.sim.platform import SimPlatform
 from litex.soc.integration.soc_core import (soc_core_argdict, soc_core_args,
                                             get_mem_data, SoCCore)
 from litex.soc.integration.builder import Builder, builder_args
+from litex.soc.interconnect import wishbone
 
 _io = [
     (
@@ -29,7 +30,7 @@ _io = [
     (
         "wishbone",
         0,
-        Subsignal("adr", Pins(30)),
+        Subsignal("adr", Pins(32)),
         Subsignal("dat_r", Pins(32)),
         Subsignal("dat_w", Pins(32)),
         Subsignal("sel", Pins(4)),
@@ -170,13 +171,13 @@ class BaseSoC(SoCCore):
         # Deasserting tx_en should not be delayed
         self.comb += usb_pads.tx_en.eq(usb_tx_en & ~usb_tx_en_dut)
 
-        class _WishboneBridge(Module):
-            def __init__(self, interface):
-                self.wishbone = interface
+        # USB IP core bus interface (wb[4] in riscv project)
+        self.wb_ub = wishbone.Interface()
+        self.add_wb_slave(0x84000000, self.wb_ub, 1 << 16)
 
-        self.submodules.wb = _WishboneBridge(
-                self.platform.request("wishbone"))
-        self.add_wb_master(self.wb.wishbone)
+        # USB IP core Endpoint interface (wb[5] in riscv project)
+        self.wb_ep = wishbone.Interface()
+        self.add_wb_slave(0x85000000, self.wb_ep, 1 << 16)
 
         # USB Core
         #         EP Buffer
@@ -188,12 +189,18 @@ class BaseSoC(SoCCore):
         ep_rx_data_1 = Signal(32)
         ep_rx_re_0 = Signal()
 
-        ep_tx_addr_0 = self.wb.wishbone.adr
-        ep_tx_data_0 = self.wb.wishbone.dat_w
-        ep_tx_we_0 = self.wb.wishbone.we & ~self.wb.wishbone.ack & self.wb.wishbone.cyc  # ???
+        ep_tx_addr_0 = self.wb_ep.adr
+        ep_tx_data_0 = self.wb_ep.dat_w
+        ep_tx_we_0 = self.wb_ep.we & ~self.wb_ep.ack & self.wb_ep.cyc
 
-        ep_rx_addr_0 = self.wb.wishbone.adr
-        ep_rx_data_1 = self.wb.wishbone.dat_r  # ???
+        ep_rx_addr_0 = self.wb_ep.adr
+        self.comb += If(
+                self.wb_ep.cyc == 1,
+                # then
+                self.wb_ep.dat_r.eq(ep_rx_data_1)
+                ).Else(
+                self.wb_ep.eq(0)
+                )
         ep_rx_re_0 = 1
 
         #     Bus interface
@@ -204,12 +211,12 @@ class BaseSoC(SoCCore):
         ub_we = Signal()
         ub_ack = Signal()
 
-        ub_addr = self.wb.wishbone.adr
-        ub_wdata = self.wb.wishbone.dat_w
-        ub_rdata = self.wb.wishbone.dat_r
-        ub_cyc = self.wb.wishbone.cyc
-        ub_we = self.wb.wishbone.we
-        ub_ack = self.wb.wishbone.ack
+        ub_addr = self.wb_ub.adr
+        ub_wdata = self.wb_ub.dat_w
+        ub_rdata = self.wb_ub.dat_r
+        ub_cyc = self.wb_ub.cyc
+        ub_we = self.wb_ub.we
+        ub_ack = self.wb_ub.ack
 
         #     Core
         platform.add_source("../ice40-playground/cores/usb/rtl/usb.v")
