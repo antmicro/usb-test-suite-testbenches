@@ -54,8 +54,8 @@ def test_enumeration_w10(dut):
     yield harness.get_configuration_descriptor(
         total_length, response=model.configDescriptor[1].get())
     # NOTE Why exactly 265 bytes are requested below?
-    #yield harness.get_configuration_descriptor(
-    #    length=0x0109, response=model.configDescriptor[1].get())
+    yield harness.get_configuration_descriptor(
+        length=0x0109, response=model.configDescriptor[1].get())
 
     yield harness.set_configuration(1)
 

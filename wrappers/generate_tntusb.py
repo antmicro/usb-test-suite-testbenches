@@ -7,7 +7,6 @@
 import argparse
 
 from migen import Module, Signal, Instance, ClockDomain, If
-from migen.fhdl.specials import TSTriple
 from migen.fhdl.structure import ResetSignal
 
 from litex.build.generic_platform import Pins, Subsignal

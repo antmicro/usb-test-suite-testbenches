@@ -19,10 +19,15 @@ model = UsbDevice(descriptorFile)
 @cocotb.test()
 def test_control_setup(dut):
     harness = get_harness(dut)
+    harness.max_packet_size = model.deviceDescriptor.bMaxPacketSize0
     yield harness.reset()
-    yield harness.connect()
-    yield harness.port_reset(1e3)
+    yield harness.wait(1e3, units="us")
 
+    yield harness.port_reset(10e3)
+    yield harness.connect()
+    yield harness.wait(1e3, units="us")
+    # After waiting (bus inactivity) let's start with SOF
+    yield harness.host_send_sof(0x01)
     # Device is at address 0 after reset
     yield harness.transaction_setup(
         0,
@@ -35,10 +40,15 @@ def test_control_setup(dut):
 @cocotb.test()
 def test_control_transfer_in(dut):
     harness = get_harness(dut)
+    harness.max_packet_size = model.deviceDescriptor.bMaxPacketSize0
     yield harness.reset()
-    yield harness.connect()
     yield harness.wait(1e3, units="us")
 
+    yield harness.port_reset(10e3)
+    yield harness.connect()
+    yield harness.wait(1e3, units="us")
+    # After waiting (bus inactivity) let's start with SOF
+    yield harness.host_send_sof(0x01)
     DEVICE_ADDRESS = 20
     yield harness.set_device_address(DEVICE_ADDRESS)
     yield harness.control_transfer_in(
@@ -52,9 +62,15 @@ def test_control_transfer_in(dut):
 @cocotb.test()
 def test_sof_stuffing(dut):
     harness = get_harness(dut)
+    harness.max_packet_size = model.deviceDescriptor.bMaxPacketSize0
     yield harness.reset()
+    yield harness.wait(1e3, units="us")
+
+    yield harness.port_reset(10e3)
     yield harness.connect()
     yield harness.wait(1e3, units="us")
+    # After waiting (bus inactivity) let's start with SOF
+    yield harness.host_send_sof(0x01)
 
     yield harness.host_send_sof(0x04ff)
     yield harness.host_send_sof(0x0512)
@@ -65,9 +81,15 @@ def test_sof_stuffing(dut):
 @cocotb.test()
 def test_sof_is_ignored(dut):
     harness = get_harness(dut)
+    harness.max_packet_size = model.deviceDescriptor.bMaxPacketSize0
     yield harness.reset()
+    yield harness.wait(1e3, units="us")
+
+    yield harness.port_reset(10e3)
     yield harness.connect()
     yield harness.wait(1e3, units="us")
+    # After waiting (bus inactivity) let's start with SOF
+    yield harness.host_send_sof(0x01)
 
     DEVICE_ADDRESS = 0x20
     epaddr_out = EndpointType.epaddr(0, EndpointType.OUT)
@@ -106,12 +128,18 @@ def test_sof_is_ignored(dut):
     yield harness.transaction_status_out(DEVICE_ADDRESS, epaddr_out)
 
 
-@cocotb.test(expect_fail=True)  # Doesn't set STALL as expected
+@cocotb.test(skip=True)  # Doesn't set STALL as expected
 def test_control_setup_clears_stall(dut):
     harness = get_harness(dut)
+    harness.max_packet_size = model.deviceDescriptor.bMaxPacketSize0
     yield harness.reset()
+    yield harness.wait(1e3, units="us")
+
+    yield harness.port_reset(10e3)
     yield harness.connect()
     yield harness.wait(1e3, units="us")
+    # After waiting (bus inactivity) let's start with SOF
+    yield harness.host_send_sof(0x01)
 
     addr = 13
     yield harness.set_device_address(addr)
@@ -155,9 +183,15 @@ def test_control_setup_clears_stall(dut):
 @cocotb.test()
 def test_control_transfer_in_out(dut):
     harness = get_harness(dut)
+    harness.max_packet_size = model.deviceDescriptor.bMaxPacketSize0
     yield harness.reset()
+    yield harness.wait(1e3, units="us")
+
+    yield harness.port_reset(10e3)
     yield harness.connect()
     yield harness.wait(1e3, units="us")
+    # After waiting (bus inactivity) let's start with SOF
+    yield harness.host_send_sof(0x01)
 
     DEVICE_ADDRESS = 20
     yield harness.set_device_address(DEVICE_ADDRESS)
@@ -179,9 +213,15 @@ def test_control_transfer_in_out(dut):
 def test_control_transfer_in_out_in(dut):
     """This transaction is pretty much the first thing any OS will do"""
     harness = get_harness(dut)
+    harness.max_packet_size = model.deviceDescriptor.bMaxPacketSize0
     yield harness.reset()
+    yield harness.wait(1e3, units="us")
+
+    yield harness.port_reset(10e3)
     yield harness.connect()
     yield harness.wait(1e3, units="us")
+    # After waiting (bus inactivity) let's start with SOF
+    yield harness.host_send_sof(0x01)
 
     device_address = 0  # After reset
     yield harness.control_transfer_in(
@@ -210,9 +250,15 @@ def test_control_transfer_in_out_in(dut):
 @cocotb.test()
 def test_control_transfer_out_in(dut):
     harness = get_harness(dut)
+    harness.max_packet_size = model.deviceDescriptor.bMaxPacketSize0
     yield harness.reset()
+    yield harness.wait(1e3, units="us")
+
+    yield harness.port_reset(10e3)
     yield harness.connect()
     yield harness.wait(1e3, units="us")
+    # After waiting (bus inactivity) let's start with SOF
+    yield harness.host_send_sof(0x01)
 
     DEVICE_ADDRESS = 20
     yield harness.set_device_address(
