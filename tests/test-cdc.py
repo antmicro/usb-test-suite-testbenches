@@ -3,9 +3,8 @@ from cocotb.triggers import Timer
 
 from cocotb_usb.harness import get_harness
 from cocotb_usb.device import UsbDevice
-from cocotb_usb.descriptors import Descriptor, USBDeviceRequest
-from cocotb_usb.descriptors.cdc import set_line_coding, set_control_line_state, LineCodingStructure, CDCRequest
-from cocotb_usb.usb.endpoint import EndpointType
+from cocotb_usb.descriptors.cdc import (setLineCoding, setControlLineState,
+                                        getLineCoding, LineCodingStructure)
 
 from os import environ
 
@@ -17,13 +16,15 @@ model = UsbDevice(descriptorFile)
 
 
 @cocotb.test()
-def test_cdc_transfer(dut):
+def test_tinyfpgabl_cdc_transfer(dut):
     harness = get_harness(dut)
     harness.max_packet_size = model.deviceDescriptor.bMaxPacketSize0
     yield harness.reset()
     yield harness.wait(1e3, units="us")
 
-    yield harness.port_reset(2e3)
+    dut._log.info("[Enumerating device]")
+
+    yield harness.port_reset(1e3)
     yield harness.connect()
     yield harness.wait(1e3, units="us")
     # After waiting (bus inactivity) let's start with SOF
@@ -48,30 +49,42 @@ def test_cdc_transfer(dut):
     # Device should now be in "Configured" state
 
     INTERFACE = 1
+    # Values from TinyFPGA-Bootloader ep_rom
     line_coding = LineCodingStructure(9600,
-                LineCodingStructure.STOP_BITS_1,
-                LineCodingStructure.PARITY_NONE,
-                LineCodingStructure.DATA_BITS_8)
+                                      LineCodingStructure.STOP_BITS_1_5,
+                                      LineCodingStructure.PARITY_NONE,
+                                      LineCodingStructure.DATA_BITS_8)
 
-    Type = USBDeviceRequest.Type
-    yield harness.control_transfer_out(
+    dut._log.info("[Getting line coding]")
+    yield harness.control_transfer_in(
             DEVICE_ADDRESS,
-            USBDeviceRequest.build(
-                bmRequestType=Type.HOST_TO_DEVICE | Type.CLASS | Type.INTERFACE,
-                bRequest=CDCRequest.SET_LINE_CODING,
-                wValue=0,
-                wIndex=INTERFACE,
-                wLength=line_coding.size()),
+            getLineCoding(INTERFACE),
             line_coding.get())
 
+    line_coding.dwDTERate = 115200
+    line_coding.bCharFormat = LineCodingStructure.STOP_BITS_1
+    dut._log.info("[Setting line coding]")
     yield harness.control_transfer_out(
             DEVICE_ADDRESS,
-            set_control_line_state(
+            setLineCoding(INTERFACE),
+            line_coding.get())
+
+    dut._log.info("[Setting control line state]")
+    yield harness.control_transfer_out(
+            DEVICE_ADDRESS,
+            setControlLineState(
                 interface=0,
                 rts=1,
                 dtr=1),
             None)
+
     BOOT_OPCODE = 0x00
-    EP_ADDRESS = EndpointType.epaddr(1, EndpointType.OUT)
-    yield harness.transaction_data_out(DEVICE_ADDRESS, 0x01, [BOOT_OPCODE])
-    yield Timer(1e2, "us")  # Wait and see if it boots
+    EP_ADDRESS = 0x01
+    dut._log.info("[Sending BOOT op code]")
+    yield harness.transaction_data_out(DEVICE_ADDRESS,
+                                       EP_ADDRESS,
+                                       [BOOT_OPCODE])
+
+    yield Timer(1e2, "us")  # Wait and see if it "boots"
+    boot = int(dut.dut.tinyfpga_bootloader.boot_to_user_design)
+    dut._log.info(f"Boot line state: {boot}")
