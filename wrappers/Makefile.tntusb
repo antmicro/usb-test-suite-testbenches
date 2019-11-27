@@ -1,0 +1,23 @@
+TARGET_OPTIONS = --cpu-type picorv32 --rom-init ../ice40-playground/projects/riscv_usb/fw/fw_app.bin
+VERILOG_SOURCES += $(WPWD)/../ice40-playground/cores/usb/rtl/*.v \
+				   $(WPWD)/../yosys/techlibs/ice40/cells_sim.v \
+				   $(WPWD)/../ice40-playground/cores/misc/rtl/*.v
+#				   $(WPWD)/../ice40-playground/projects/riscv_usb/rtl/*.v
+#				   $(WPWD)/../ice40-playground/projects/riscv_usb/sim/*.v
+VERILOG_SOURCES += $(WPWD)/../litex/litex/soc/cores/cpu/picorv32/verilog/picorv32.v
+COMPILE_ARGS += -I $(WPWD)/../ice40-playground/cores/usb/rtl
+export PATH := $(WPWD)/../riscv64-unknown-elf-gcc-8.1.0-2019.01.0-x86_64-linux-ubuntu14/bin:/$(PATH)
+TARGET_DEPS = $(WPWD)/../ice40-playground/projects/riscv_usb/fw/fw_app.bin
+
+$(WPWD)/../ice40-playground/projects/riscv_usb/fw/fw_app.bin:
+	patch -d ../ice40-playground/ -p1 <wrappers/tntusb.patch
+	make -C ../ice40-playground/projects/riscv_usb/fw CROSS=riscv64-unknown-elf- fw_app.hex
+
+sim: $(PWD)/dut.v
+	rm -f results.xml
+	../ice40-playground/cores/usb/utils/microcode.py > usb_trans_mc.hex
+	cp -r build/gateware/mem.init .
+	make results.xml
+
+clean::
+	rm usb_trans_mc.hex mem.init

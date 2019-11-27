@@ -18,12 +18,17 @@ def test_macos_enumeration(dut):
     harness = get_harness(dut)
     harness.max_packet_size = model.deviceDescriptor.bMaxPacketSize0
     yield harness.reset()
-    yield harness.connect()
-
     yield harness.wait(1e3, units="us")
 
     yield harness.port_reset(20e3)  # 20 ms
+    yield harness.connect()
+    yield harness.wait(1e3, units="us")
+    # After waiting (bus inactivity) let's start with SOF
+    yield harness.host_send_sof(0x01)
     yield harness.set_device_address(DEVICE_ADDRESS)
+    # There is a longish recovery period after setting address, so let's send
+    # a SOF to make sure DUT doesn't suspend
+    yield harness.host_send_sof(0x02)
     yield harness.get_device_descriptor(response=model.deviceDescriptor.get())
 
     # If a device implements string descriptors, it must support ENG LangId

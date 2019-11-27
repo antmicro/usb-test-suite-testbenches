@@ -1,0 +1,190 @@
+diff --git a/cores/misc/rtl/prims.v b/cores/misc/rtl/prims.v
+index b693b0c..55f10dd 100644
+--- a/cores/misc/rtl/prims.v
++++ b/cores/misc/rtl/prims.v
+@@ -52,7 +52,7 @@ module lut4_n #(
+ 	genvar i;
+ 	generate
+ 		for (i=0; i<WIDTH; i=i+1)
+-		begin : bit
++		begin //: bit
+ 			(* RBEL_X=RBEL_X *)
+ 			(* RBEL_Y=RBEL_Y+(RBEL_Z+i)>>3 *)
+ 			(* RBEL_Z=(RBEL_Z+i)&7 *)
+@@ -96,7 +96,7 @@ module lut4_carry_n #(
+ 	genvar i;
+ 	generate
+ 		for (i=0; i<WIDTH; i=i+1)
+-		begin : bit
++		begin //: bit
+ 			(* RBEL_X=RBEL_X *)
+ 			(* RBEL_Y=RBEL_Y+(RBEL_Z+i)>>3 *)
+ 			(* RBEL_Z=(RBEL_Z+i)&7 *)
+@@ -138,7 +138,7 @@ module dff_n #(
+ 	genvar i;
+ 	generate
+ 		for (i=0; i<WIDTH; i=i+1)
+-		begin : bit
++		begin //: bit
+ 			(* RBEL_X=RBEL_X *)
+ 			(* RBEL_Y=RBEL_Y+(RBEL_Z+i)>>3 *)
+ 			(* RBEL_Z=(RBEL_Z+i)&7 *)
+@@ -171,7 +171,7 @@ module dffe_n #(
+ 	genvar i;
+ 	generate
+ 		for (i=0; i<WIDTH; i=i+1)
+-		begin : bit
++		begin //: bit
+ 			(* RBEL_X=RBEL_X *)
+ 			(* RBEL_Y=RBEL_Y+((RBEL_Z+i)>>3) *)
+ 			(* RBEL_Z=(RBEL_Z+i)&7 *)
+@@ -207,7 +207,7 @@ module dffer_n #(
+ 	genvar i;
+ 	generate
+ 		for (i=0; i<WIDTH; i=i+1)
+-		begin : bit
++		begin //: bit
+ 			if (RSTVAL[i] == 1'b1)
+ 				(* RBEL_X=RBEL_X *)
+ 				(* RBEL_Y=RBEL_Y+((RBEL_Z+i)>>3) *)
+@@ -258,7 +258,7 @@ module dffesr_n #(
+ 	genvar i;
+ 	generate
+ 		for (i=0; i<WIDTH; i=i+1)
+-		begin : bit
++		begin //: bit
+ 			if (RSTVAL[i] == 1'b1)
+ 				(* RBEL_X=RBEL_X *)
+ 				(* RBEL_Y=RBEL_Y+((RBEL_Z+i)>>3) *)
+diff --git a/projects/riscv_usb/fw/fw_app.c b/projects/riscv_usb/fw/fw_app.c
+index bcf6af2..8477485 100644
+--- a/projects/riscv_usb/fw/fw_app.c
++++ b/projects/riscv_usb/fw/fw_app.c
+@@ -79,61 +79,65 @@ void main()
+ 	int cmd = 0;
+ 
+ 	/* Init console IO */
+-	console_init();
+-	puts("Booting App image..\n");
++	//console_init();
++	//puts("Booting App image..\n");
+ 
+-	/* LED */
+-	led_init();
+-	led_color(48, 96, 5);
+-	led_blink(true, 200, 1000);
+-	led_breathe(true, 100, 200);
+-	led_state(true);
++	///* LED */
++	//led_init();
++	//led_color(48, 96, 5);
++	//led_blink(true, 200, 1000);
++	//led_breathe(true, 100, 200);
++	//led_state(true);
+ 
+-	/* SPI */
+-	spi_init();
++	///* SPI */
++	//spi_init();
+ 
+ 	/* Enable USB directly */
+-	serial_no_init();
++	//serial_no_init();
+ 	usb_init(&app_stack_desc);
+ 	usb_dfu_rt_init();
++	usb_connect();
+ 
+-	/* Main loop */
+-	while (1)
+-	{
+-		/* Prompt ? */
+-		if (cmd >= 0)
+-			printf("Command> ");
+-
+-		/* Poll for command */
+-		cmd = getchar_nowait();
+-
+-		if (cmd >= 0) {
+-			if (cmd > 32 && cmd < 127) {
+-				putchar(cmd);
+-				putchar('\r');
+-				putchar('\n');
+-			}
+-
+-			switch (cmd)
+-			{
+-			case 'p':
+-				usb_debug_print();
+-				break;
+-			case 'b':
+-				boot_dfu();
+-				break;
+-			case 'c':
+-				usb_connect();
+-				break;
+-			case 'd':
+-				usb_disconnect();
+-				break;
+-			default:
+-				break;
+-			}
+-		}
+-
+-		/* USB poll */
++	while(1)
+ 		usb_poll();
+-	}
++	//end
++	/* Main loop */
++//	while (1)
++//	{
++//		/* Prompt ? */
++//		if (cmd >= 0)
++//			printf("Command> ");
++//
++//		/* Poll for command */
++//		cmd = getchar_nowait();
++//
++//		if (cmd >= 0) {
++//			if (cmd > 32 && cmd < 127) {
++//				putchar(cmd);
++//				putchar('\r');
++//				putchar('\n');
++//			}
++//
++//			switch (cmd)
++//			{
++//			case 'p':
++//				usb_debug_print();
++//				break;
++//			case 'b':
++//				boot_dfu();
++//				break;
++//			case 'c':
++//				usb_connect();
++//				break;
++//			case 'd':
++//				usb_disconnect();
++//				break;
++//			default:
++//				break;
++//			}
++//		}
++//
++//		/* USB poll */
++//		usb_poll();
++//	}
+ }
+diff --git a/projects/riscv_usb/fw/lnk-app.lds b/projects/riscv_usb/fw/lnk-app.lds
+index 43e5f2e..a00a31a 100644
+--- a/projects/riscv_usb/fw/lnk-app.lds
++++ b/projects/riscv_usb/fw/lnk-app.lds
+@@ -1,7 +1,7 @@
+ MEMORY
+ {
+     ROM (rx)    : ORIGIN = 0x00010000, LENGTH = 0xc000
+-    SPRAM (xrw) : ORIGIN = 0x0001c000, LENGTH = 0x4000
++    SPRAM (xrw) : ORIGIN = 0x00020000, LENGTH = 0x4000
+     BRAM  (xrw) : ORIGIN = 0x00000010, LENGTH = 0x03f0
+ }
+ ENTRY(_start)
