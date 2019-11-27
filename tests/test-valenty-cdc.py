@@ -52,8 +52,8 @@ def test_valentyusb_cdc(dut):
             getLineCoding(INTERFACE),
             line_coding.get())
 
-    line_coding.dwDTERate = 115200
-    line_coding.bCharFormat = LineCodingStructure.STOP_BITS_1
+    line_coding.dwDTERate = 9600
+    line_coding.bCharFormat = LineCodingStructure.STOP_BITS_2
     dut._log.info("[Setting line coding]")
     yield harness.control_transfer_out(
             DEVICE_ADDRESS,
