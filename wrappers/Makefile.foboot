@@ -2,6 +2,7 @@ TARGET_OPTIONS = --cpu-type vexriscv --variant epfifo --rom-init ../foboot/sw/fo
 VERILOG_SOURCES += $(WPWD)/../litex/litex/soc/cores/cpu/vexriscv/verilog/VexRiscv.v
 export PATH := $(WPWD)/../riscv64-unknown-elf-gcc-8.1.0-2019.01.0-x86_64-linux-ubuntu14/bin/:$(PATH)
 TARGET_DEPS = $(WPWD)/../foboot/sw/foboot.bin
+PYTHONPATH = ../litex:../valentyusb
 
 $(WPWD)/../foboot/sw/foboot.bin:
 	patch -d ../foboot/ -p1 <wrappers/foboot.patch
