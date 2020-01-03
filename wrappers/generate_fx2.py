@@ -46,10 +46,9 @@ class SoC(FX2):
 
         # connect wishbone to io pins
         wb = self.platform.request('wishbone')
-        for sig, _ in wb.layout:
-            sim = getattr(sim_wishbone, sig)
-            platform = getattr(wb, sig)
-            self.comb += sim.eq(platform)
+        # copy wishbone layout, as there is no direction in _io, so .connect() won't work
+        wb.layout = sim_wishbone.layout
+        self.comb += wb.connect(sim_wishbone)
 
         # add clocks
         clk = self.platform.request('clk')
@@ -93,8 +92,6 @@ def generate(code):
 
 
 def main():
-
-
     parser = argparse.ArgumentParser(
         description="TODO")
     parser.add_argument('--code',
