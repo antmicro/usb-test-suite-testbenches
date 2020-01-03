@@ -1,26 +1,48 @@
-TARGET_OPTIONS =
-PYTHONPATH = ../litex:../fx2-sim
-VERILOG_SOURCES += \
-				   $(WPWD)/../fx2-sim/fx2/verilog/rtl/8051/oc8051_acc.v \
-				   $(WPWD)/../fx2-sim/fx2/verilog/rtl/8051/oc8051_alu.v \
-				   $(WPWD)/../fx2-sim/fx2/verilog/rtl/8051/oc8051_alu_src_sel.v \
-				   $(WPWD)/../fx2-sim/fx2/verilog/rtl/8051/oc8051_b_register.v \
-				   $(WPWD)/../fx2-sim/fx2/verilog/rtl/8051/oc8051_comp.v \
-				   $(WPWD)/../fx2-sim/fx2/verilog/rtl/8051/oc8051_cy_select.v \
-				   $(WPWD)/../fx2-sim/fx2/verilog/rtl/8051/oc8051_decoder.v \
-				   $(WPWD)/../fx2-sim/fx2/verilog/rtl/8051/oc8051_divide.v \
-				   $(WPWD)/../fx2-sim/fx2/verilog/rtl/8051/oc8051_dptr.v \
-				   $(WPWD)/../fx2-sim/fx2/verilog/rtl/8051/oc8051_indi_addr.v \
-				   $(WPWD)/../fx2-sim/fx2/verilog/rtl/8051/oc8051_int.v \
-				   $(WPWD)/../fx2-sim/fx2/verilog/rtl/8051/oc8051_memory_interface.v \
-				   $(WPWD)/../fx2-sim/fx2/verilog/rtl/8051/oc8051_multiply.v \
-				   $(WPWD)/../fx2-sim/fx2/verilog/rtl/8051/oc8051_ports.v \
-				   $(WPWD)/../fx2-sim/fx2/verilog/rtl/8051/oc8051_psw.v \
-				   $(WPWD)/../fx2-sim/fx2/verilog/rtl/8051/oc8051_ram_256x8_two_bist.v \
-				   $(WPWD)/../fx2-sim/fx2/verilog/rtl/8051/oc8051_ram_top.v \
-				   $(WPWD)/../fx2-sim/fx2/verilog/rtl/8051/oc8051_sfr.v \
-				   $(WPWD)/../fx2-sim/fx2/verilog/rtl/8051/oc8051_sp.v \
-				   $(WPWD)/../fx2-sim/fx2/verilog/rtl/8051/oc8051_tc.v \
-				   $(WPWD)/../fx2-sim/fx2/verilog/rtl/8051/oc8051_tc2.v \
-				   $(WPWD)/../fx2-sim/fx2/verilog/rtl/8051/oc8051_top.v
-COMPILE_ARGS += -I $(WPWD)/../fx2-sim/fx2/verilog/rtl/8051/ -I $(WPWD)/../fx2-sim/fx2/verilog/rtl/defs/
+# assuming fx2-sim has been cloned to ..
+FX2_SIM_DIR = ../fx2-sim
+PYTHONPATH = ../litex:$(FX2_SIM_DIR)
+
+# add all the required Verilog sources
+COMPILE_ARGS += -I $(FX2_SIM_DIR)/fx2/verilog/rtl/8051/ \
+				-I $(FX2_SIM_DIR)/fx2/verilog/rtl/defs/
+VERILOG_SOURCES += $(FX2_SIM_DIR)/fx2/verilog/rtl/8051/oc8051_acc.v \
+				   $(FX2_SIM_DIR)/fx2/verilog/rtl/8051/oc8051_alu.v \
+				   $(FX2_SIM_DIR)/fx2/verilog/rtl/8051/oc8051_alu_src_sel.v \
+				   $(FX2_SIM_DIR)/fx2/verilog/rtl/8051/oc8051_b_register.v \
+				   $(FX2_SIM_DIR)/fx2/verilog/rtl/8051/oc8051_comp.v \
+				   $(FX2_SIM_DIR)/fx2/verilog/rtl/8051/oc8051_cy_select.v \
+				   $(FX2_SIM_DIR)/fx2/verilog/rtl/8051/oc8051_decoder.v \
+				   $(FX2_SIM_DIR)/fx2/verilog/rtl/8051/oc8051_divide.v \
+				   $(FX2_SIM_DIR)/fx2/verilog/rtl/8051/oc8051_dptr.v \
+				   $(FX2_SIM_DIR)/fx2/verilog/rtl/8051/oc8051_indi_addr.v \
+				   $(FX2_SIM_DIR)/fx2/verilog/rtl/8051/oc8051_int.v \
+				   $(FX2_SIM_DIR)/fx2/verilog/rtl/8051/oc8051_memory_interface.v \
+				   $(FX2_SIM_DIR)/fx2/verilog/rtl/8051/oc8051_multiply.v \
+				   $(FX2_SIM_DIR)/fx2/verilog/rtl/8051/oc8051_ports.v \
+				   $(FX2_SIM_DIR)/fx2/verilog/rtl/8051/oc8051_psw.v \
+				   $(FX2_SIM_DIR)/fx2/verilog/rtl/8051/oc8051_ram_256x8_two_bist.v \
+				   $(FX2_SIM_DIR)/fx2/verilog/rtl/8051/oc8051_ram_top.v \
+				   $(FX2_SIM_DIR)/fx2/verilog/rtl/8051/oc8051_sfr.v \
+				   $(FX2_SIM_DIR)/fx2/verilog/rtl/8051/oc8051_sp.v \
+				   $(FX2_SIM_DIR)/fx2/verilog/rtl/8051/oc8051_tc.v \
+				   $(FX2_SIM_DIR)/fx2/verilog/rtl/8051/oc8051_tc2.v \
+				   $(FX2_SIM_DIR)/fx2/verilog/rtl/8051/oc8051_top.v
+
+# export CSR address file
+export DUT_CSRS = csr.csv
+
+# use given binary with FX2 firmware
+FX2_FIRMWARE = $(FX2_SIM_DIR)/test/xram.bin
+TARGET_DEPS = $(FX2_FIRMWARE)
+TARGET_OPTIONS = --code $(FX2_FIRMWARE)
+
+$(FX2_FIRMWARE):
+	$(MAKE) -C $(FX2_SIM_DIR)/test
+
+sim: $(PWD)/dut.v
+	cp build/gateware/mem*.init .
+	rm -f results.xml
+	make results.xml
+
+clean::
+	rm -f ./mem*.init csr.csv
