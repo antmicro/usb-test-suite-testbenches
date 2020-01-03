@@ -3,6 +3,7 @@ import sys
 import argparse
 
 from migen import *
+from migen.util.misc import xdir
 
 from litex.soc.interconnect import wishbone
 
@@ -11,6 +12,8 @@ from litex.build.sim.platform import SimPlatform
 from litex.build.sim.config import SimConfig
 
 from fx2.soc import FX2, FX2CRG
+from fx2.memory import FX2RAMArea, FX2CSRBank
+from litex.soc.interconnect.csr import CSRStatus
 
 
 _io = [
@@ -52,12 +55,32 @@ class SoC(FX2):
         self.submodules.crg = FX2CRG(self.csr_bank, clk=clk, rst=rst)
 
 
+def generate_csr_csv(soc):
+    # generate simplified csr.csv to have register addresses during tests
+    csv = ''
+    for _, obj in xdir(soc, return_values=True):
+        if isinstance(obj, FX2RAMArea):
+            csv += 'memory_region,{name},0x{origin:04x},{size:d},\n'.format(
+                name=obj._ram_area, origin=obj.base_address, size=obj.size)
+        if isinstance(obj, FX2CSRBank):
+            for adr, csr in obj._csrs.items():
+                csv += 'csr_register,{name},0x{adr:04x},{size:d},{access}\n'.format(
+                    name=csr.name, adr=adr, size=1,
+                    access="ro" if isinstance(csr, CSRStatus) else "rw")
+    return csv
+
+
 def generate(code):
     platform = SimPlatform("sim", _io, toolchain="verilator")
     soc = SoC(platform, clk_freq=48e6, code=code)
     config = SimConfig(default_clk='clk48')
-    vns = platform.build(soc, sim_config=config, build=True, run=False, trace=True,
-                         build_dir=os.path.join('build', 'gateware'))
+
+    build_dir = os.path.join('build', 'gateware')
+    vns = platform.build(soc, sim_config=config, build=True, run=False, trace=True, build_dir=build_dir)
+
+    with open('csr.csv', 'w') as f:
+        f.write(generate_csr_csv(soc))
+
     soc.do_exit(vns)
 
 
