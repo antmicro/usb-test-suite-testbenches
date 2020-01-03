@@ -1,2 +1,26 @@
 TARGET_OPTIONS =
 PYTHONPATH = ../litex:../fx2-sim
+VERILOG_SOURCES += \
+				   $(WPWD)/../fx2-sim/fx2/verilog/rtl/8051/oc8051_acc.v \
+				   $(WPWD)/../fx2-sim/fx2/verilog/rtl/8051/oc8051_alu.v \
+				   $(WPWD)/../fx2-sim/fx2/verilog/rtl/8051/oc8051_alu_src_sel.v \
+				   $(WPWD)/../fx2-sim/fx2/verilog/rtl/8051/oc8051_b_register.v \
+				   $(WPWD)/../fx2-sim/fx2/verilog/rtl/8051/oc8051_comp.v \
+				   $(WPWD)/../fx2-sim/fx2/verilog/rtl/8051/oc8051_cy_select.v \
+				   $(WPWD)/../fx2-sim/fx2/verilog/rtl/8051/oc8051_decoder.v \
+				   $(WPWD)/../fx2-sim/fx2/verilog/rtl/8051/oc8051_divide.v \
+				   $(WPWD)/../fx2-sim/fx2/verilog/rtl/8051/oc8051_dptr.v \
+				   $(WPWD)/../fx2-sim/fx2/verilog/rtl/8051/oc8051_indi_addr.v \
+				   $(WPWD)/../fx2-sim/fx2/verilog/rtl/8051/oc8051_int.v \
+				   $(WPWD)/../fx2-sim/fx2/verilog/rtl/8051/oc8051_memory_interface.v \
+				   $(WPWD)/../fx2-sim/fx2/verilog/rtl/8051/oc8051_multiply.v \
+				   $(WPWD)/../fx2-sim/fx2/verilog/rtl/8051/oc8051_ports.v \
+				   $(WPWD)/../fx2-sim/fx2/verilog/rtl/8051/oc8051_psw.v \
+				   $(WPWD)/../fx2-sim/fx2/verilog/rtl/8051/oc8051_ram_256x8_two_bist.v \
+				   $(WPWD)/../fx2-sim/fx2/verilog/rtl/8051/oc8051_ram_top.v \
+				   $(WPWD)/../fx2-sim/fx2/verilog/rtl/8051/oc8051_sfr.v \
+				   $(WPWD)/../fx2-sim/fx2/verilog/rtl/8051/oc8051_sp.v \
+				   $(WPWD)/../fx2-sim/fx2/verilog/rtl/8051/oc8051_tc.v \
+				   $(WPWD)/../fx2-sim/fx2/verilog/rtl/8051/oc8051_tc2.v \
+				   $(WPWD)/../fx2-sim/fx2/verilog/rtl/8051/oc8051_top.v
+COMPILE_ARGS += -I $(WPWD)/../fx2-sim/fx2/verilog/rtl/8051/ -I $(WPWD)/../fx2-sim/fx2/verilog/rtl/defs/

@@ -21,17 +21,10 @@ module tb(
 );
 
 assign clkdiff = clk48_host ^ clk48_device;
-pulldown(usb_d_n);
-pulldown(usb_d_p);
 
 dut dut (
-	.clk_clk48(clk48_device),
-	.clk_clk12(clk12),
+	.clk(clk48_device),
 	.reset(reset),
-	.usb_d_p(usb_d_p),
-	.usb_d_n(usb_d_n),
-	.usb_pullup(usb_pullup),
-	.usb_tx_en(usb_tx_en),
 	.wishbone_adr(wishbone_adr),
 	.wishbone_dat_r(wishbone_datrd),
 	.wishbone_dat_w(wishbone_datwr),

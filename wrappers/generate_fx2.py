@@ -1,3 +1,4 @@
+import os
 import sys
 import argparse
 
@@ -14,12 +15,7 @@ from fx2.soc import FX2, FX2CRG
 
 _io = [
     ("reset", 0, Pins(1)),
-    (
-        'clk',
-        0,
-        Subsignal('clk48', Pins(1)),
-        Subsignal('clk12', Pins(1)),
-    ),
+    ("clk", 0, Pins(1)),
     (
         'wishbone', 0,
         Subsignal('adr',   Pins(30)),
@@ -53,41 +49,15 @@ class SoC(FX2):
         # add clocks
         clk = self.platform.request('clk')
         rst = self.platform.request('reset')
-        self.submodules.crg = FX2CRG(self.csr_bank, clk=clk.clk48, rst=rst)
-
-        # configure remaining clocks
-        clk12 = Signal()
-
-        self.clock_domains.cd_usb_12 = ClockDomain()
-        self.clock_domains.cd_usb_48 = ClockDomain()
-        self.clock_domains.cd_usb_48_to_12 = ClockDomain()
-
-        clk48 = clk.clk48
-        self.comb += clk.clk12.eq(clk12)
-
-        self.comb += self.cd_usb_48.clk.eq(clk48)
-        self.comb += self.cd_usb_48_to_12.clk.eq(clk48)
-
-        clk12_counter = Signal(2)
-        self.sync.usb_48_to_12 += clk12_counter.eq(clk12_counter + 1)
-
-        self.comb += clk12.eq(clk12_counter[1])
-
-        self.comb += self.crg.cd_sys.clk.eq(clk12)
-        self.comb += self.cd_usb_12.clk.eq(clk12)
-
-        self.comb += [
-            ResetSignal("sys").eq(rst),
-            ResetSignal("usb_12").eq(rst),
-            ResetSignal("usb_48").eq(rst),
-        ]
+        self.submodules.crg = FX2CRG(self.csr_bank, clk=clk, rst=rst)
 
 
 def generate(code):
     platform = SimPlatform("sim", _io, toolchain="verilator")
     soc = SoC(platform, clk_freq=48e6, code=code)
     config = SimConfig(default_clk='clk48')
-    vns = platform.build(soc, sim_config=config, build=True, run=False, trace=True)
+    vns = platform.build(soc, sim_config=config, build=True, run=False, trace=True,
+                         build_dir=os.path.join('build', 'gateware'))
     soc.do_exit(vns)
 
 
