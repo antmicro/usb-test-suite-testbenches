@@ -1,9 +1,7 @@
 `timescale 100ps / 1ps
 
 module tb(
-	input clk48_host,
-	input clk48_device,
-	output clk12,
+	input clk,
 	input reset,
 	input [29:0] wishbone_adr,
 	output [31:0] wishbone_datrd,
@@ -20,10 +18,8 @@ module tb(
 	output clkdiff
 );
 
-assign clkdiff = clk48_host ^ clk48_device;
-
 dut dut (
-	.clk(clk48_device),
+	.clk(clk),
 	.reset(reset),
 	.wishbone_adr(wishbone_adr),
 	.wishbone_dat_r(wishbone_datrd),
