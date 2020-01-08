@@ -15,7 +15,13 @@ module tb(
 	input [1:0] wishbone_bte,
 	input [4095:0] test_name,
 	output wishbone_err,
-	output clkdiff
+	output [29:0] wishbone_cpu_adr,
+	output [31:0] wishbone_cpu_dat_r,
+	output [31:0] wishbone_cpu_dat_w,
+	output wishbone_cpu_we,
+	output wishbone_cpu_cyc,
+	output wishbone_cpu_stb,
+	output wishbone_cpu_ack
 );
 
 dut dut (
@@ -31,7 +37,14 @@ dut dut (
 	.wishbone_we(wishbone_we),
 	.wishbone_cti(wishbone_cti),
 	.wishbone_bte(wishbone_bte),
-	.wishbone_err(wishbone_err)
+	.wishbone_err(wishbone_err),
+	.wishbone_cpu_adr(wishbone_cpu_adr),
+	.wishbone_cpu_dat_r(wishbone_cpu_dat_r),
+	.wishbone_cpu_dat_w(wishbone_cpu_dat_w),
+	.wishbone_cpu_we(wishbone_cpu_we),
+	.wishbone_cpu_cyc(wishbone_cpu_cyc),
+	.wishbone_cpu_stb(wishbone_cpu_stb),
+	.wishbone_cpu_ack(wishbone_cpu_ack)
 );
 
   // Dump waves

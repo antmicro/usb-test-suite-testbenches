@@ -33,7 +33,27 @@ _io = [
         Subsignal('bte',   Pins(2)),
         Subsignal('err',   Pins(1))
     ),
+    (
+        'wishbone_cpu', 0,
+        Subsignal('adr',   Pins(30)),
+        Subsignal('dat_r', Pins(32)),
+        Subsignal('dat_w', Pins(32)),
+        Subsignal('we',    Pins(1)),
+        Subsignal('cyc',   Pins(1)),
+        Subsignal('stb',   Pins(1)),
+        Subsignal('ack',   Pins(1)),
+    ),
 ]
+
+
+def copy_layout_directions(source, target):
+    # update target.layout direction values from source.layout
+    # as _io does not provide them
+    for i, (name, width) in enumerate(target.layout):
+        found = list(filter(lambda entry: entry[0] == name, source.layout))
+        assert len(found) == 1, 'Layout element not found in source: ' + name
+        direction = found[0][2]
+        target.layout[i] = (name, width, direction)
 
 
 class SoC(FX2):
@@ -45,9 +65,21 @@ class SoC(FX2):
 
         # connect wishbone to io pins
         wb = self.platform.request('wishbone')
-        # copy wishbone layout, as there is no direction in _io, so .connect() won't work
-        wb.layout = sim_wishbone.layout
+        copy_layout_directions(source=sim_wishbone, target=wb)
         self.comb += wb.connect(sim_wishbone)
+
+        # connect wishbone directly to internal cpu bus, so that it can
+        # be monitored during tests, connect everything as outputs
+        wb_cpu = self.platform.request('wishbone_cpu')
+        self.comb += [
+            wb_cpu.adr.eq(self.cpu.dbus.adr),
+            wb_cpu.dat_r.eq(self.cpu.dbus.dat_r),
+            wb_cpu.dat_w.eq(self.cpu.dbus.dat_w),
+            wb_cpu.we.eq(self.cpu.dbus.we),
+            wb_cpu.cyc.eq(self.cpu.dbus.cyc),
+            wb_cpu.stb.eq(self.cpu.dbus.stb),
+            wb_cpu.ack.eq(self.cpu.dbus.ack),
+        ]
 
         # add clocks
         clk = self.platform.request('clk')
