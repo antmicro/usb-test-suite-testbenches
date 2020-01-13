@@ -7,7 +7,7 @@ from migen.util.misc import xdir
 
 from litex.soc.interconnect import wishbone
 
-from litex.build.generic_platform import Pins, Subsignal
+from litex.build.generic_platform import Pins, Subsignal, CRG
 from litex.build.sim.platform import SimPlatform
 from litex.build.sim.config import SimConfig
 
@@ -84,7 +84,9 @@ class SoC(FX2):
         # add clocks
         clk = self.platform.request('clk')
         rst = self.platform.request('reset')
-        self.submodules.crg = FX2CRG(self.csr_bank, clk=clk, rst=rst)
+        # FIXME: using simple CRG as the clock divider causes problems with writing registers
+        # from within the simulation because they are clocked slower than wishbone and ack is to short
+        self.submodules.crg = CRG(clk=clk, rst=rst)
 
 
 def generate_csr_csv(soc):

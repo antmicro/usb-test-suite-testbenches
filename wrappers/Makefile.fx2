@@ -32,12 +32,12 @@ VERILOG_SOURCES += $(FX2_SIM_DIR)/fx2/verilog/rtl/8051/oc8051_acc.v \
 export DUT_CSRS = csr.csv
 
 # use given binary with FX2 firmware
-FX2_FIRMWARE = $(FX2_SIM_DIR)/test/xram.bin
+FX2_FIRMWARE = $(FX2_SIM_DIR)/test-libfx2/main.bin
 TARGET_DEPS = $(FX2_FIRMWARE)
 TARGET_OPTIONS = --code $(FX2_FIRMWARE)
 
 $(FX2_FIRMWARE):
-	$(MAKE) -C $(FX2_SIM_DIR)/test
+	$(MAKE) -C $(FX2_SIM_DIR)/test-libfx2 main.bin
 
 sim: $(PWD)/dut.v
 	cp build/gateware/mem*.init .
