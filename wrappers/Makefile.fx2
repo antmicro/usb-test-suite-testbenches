@@ -31,13 +31,15 @@ VERILOG_SOURCES += $(FX2_SIM_DIR)/fx2/verilog/rtl/8051/oc8051_acc.v \
 # export CSR address file
 export DUT_CSRS = csr.csv
 
-# use given binary with FX2 firmware
-FX2_FIRMWARE = $(FX2_SIM_DIR)/test-libfx2/main.bin
-TARGET_DEPS = $(FX2_FIRMWARE)
-TARGET_OPTIONS = --code $(FX2_FIRMWARE)
+# use given binary with FX2 firmware (relative to fx2-sim/firmware/)
+FX2_FIRMWARE ?= fx2usb/main.bin
 
-$(FX2_FIRMWARE):
-	$(MAKE) -C $(FX2_SIM_DIR)/test-libfx2 main.bin
+TARGET_DEPS = fx2-firmware
+TARGET_OPTIONS = --code $(FX2_SIM_DIR)/firmware/$(FX2_FIRMWARE)
+
+# override TARGET from this makefile with what we want in fx2 makefiles
+fx2-firmware:
+	$(MAKE) -C $(FX2_SIM_DIR)/firmware TARGET=main
 
 sim: $(PWD)/dut.v
 	cp build/gateware/mem*.init .
@@ -46,3 +48,4 @@ sim: $(PWD)/dut.v
 
 clean::
 	rm -f ./mem*.init csr.csv
+	$(MAKE) -C $(FX2_SIM_DIR)/firmware clean
