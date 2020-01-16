@@ -19,6 +19,7 @@ from litex.soc.interconnect.csr import CSRStatus
 _io = [
     ("reset", 0, Pins(1)),
     ("clk", 0, Pins(1)),
+    ("clk48_host", 0, Pins(1)),
     (
         'wishbone', 0,
         Subsignal('adr',   Pins(30)),
@@ -87,6 +88,9 @@ class SoC(FX2):
         # FIXME: using simple CRG as the clock divider causes problems with writing registers
         # from within the simulation because they are clocked slower than wishbone and ack is to short
         self.submodules.crg = CRG(clk=clk, rst=rst)
+
+        # clocks for host simulator
+        self.comb += self.platform.request('clk48_host').eq(clk)
 
 
 def generate_csr_csv(soc):

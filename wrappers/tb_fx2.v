@@ -2,6 +2,7 @@
 
 module tb(
 	input clk,
+	input clk48_host,
 	input reset,
 	input [29:0] wishbone_adr,
 	output [31:0] wishbone_datrd,
@@ -26,6 +27,7 @@ module tb(
 
 dut dut (
 	.clk(clk),
+	.clk48_host(clk48_host),
 	.reset(reset),
 	.wishbone_adr(wishbone_adr),
 	.wishbone_dat_r(wishbone_datrd),
