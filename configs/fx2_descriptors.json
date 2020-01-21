@@ -1,6 +1,6 @@
 [
   {
-    "_comment": "ValentyUSB",
+    "_comment": "FX2",
     "name": "Device",
     "bLength":                18,
     "bDescriptorType":         1,
@@ -9,64 +9,25 @@
     "bDeviceSubClass":         0,
     "bDeviceProtocol":         0,
     "bMaxPacketSize0":        64,
-    "idVendor":         "0x1d6b",
-    "idProduct":        "0x0105",
-    "bcdDevice":        "0x0100",
+    "idVendor":         "0x04b4",
+    "idProduct":        "0x8613",
+    "bcdDevice":        "0x0000",
     "iManufacturer":           1,
     "iProduct":                2,
-    "iSerial":                 3,
+    "iSerial":                 0,
     "bNumConfigurations":      1
   },
   {
     "name": "Configuration",
     "bLength":                 9,
     "bDescriptorType":         2,
-    "wTotalLength":           32,
-    "bNumInterfaces":          1,
+    "wTotalLength":          173,
+    "bNumInterfaces":          0,
     "bConfigurationValue":     1,
     "iConfiguration":          0,
     "bmAttributes":       "0x80",
     "bMaxPower":              50,
     "Interface": [
-      {
-        "bLength":                 9,
-        "bDescriptorType":         4,
-        "bInterfaceNumber":        0,
-        "bAlternateSetting":       0,
-        "bNumEndpoints":           2,
-        "bInterfaceClass":         8,
-        "bInterfaceSubClass":      6,
-        "bInterfaceProtocol":     80,
-        "iInterface":              0,
-        "Subdescriptors": [
-          {
-            "name":           "Endpoint",
-            "bLength":                 7,
-            "bDescriptorType":         5,
-            "bEndpointAddress":     [1, "OUT"],
-            "bmAttributes": {
-              "Transfer": "Bulk",
-              "Synch": "None",
-              "Usage": "Data"
-            },
-            "wMaxPacketSize":     "0x0200",
-            "bInterval":               0
-          },
-          {
-            "name":           "Endpoint",
-            "bLength":                 7,
-            "bDescriptorType":         5,
-            "bEndpointAddress":     [2, "IN"],
-            "bmAttributes": {
-              "Transfer": "Bulk",
-              "Synch": "None",
-              "Usage": "Data"
-            },
-            "wMaxPacketSize":     "0x0200",
-            "bInterval":               0
-          }
-        ]
-      }
     ]
   },
   {
@@ -74,9 +35,8 @@
     "bDescriptorType": 3,
     "0": ["0x0409"],
     "0x0409" : {
-      "1": "Generic",
-      "2": "IpCore",
-      "3": "1234567890"
+      "1": "Antmicro",
+      "2": "FX2 simulation example firmware"
     }
   },
   {
