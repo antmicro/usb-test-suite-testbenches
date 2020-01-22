@@ -1,8 +1,6 @@
 import os
-import sys
 import argparse
 
-from migen import *
 from migen.util.misc import xdir
 
 from litex.soc.interconnect import wishbone
@@ -11,7 +9,7 @@ from litex.build.generic_platform import Pins, Subsignal, CRG
 from litex.build.sim.platform import SimPlatform
 from litex.build.sim.config import SimConfig
 
-from fx2.soc import FX2, FX2CRG
+from fx2.soc import FX2
 from fx2.memory import FX2RAMArea, FX2CSRBank
 from litex.soc.interconnect.csr import CSRStatus
 
@@ -85,8 +83,9 @@ class SoC(FX2):
         # add clocks
         clk = self.platform.request('clk')
         rst = self.platform.request('reset')
-        # FIXME: using simple CRG as the clock divider causes problems with writing registers
-        # from within the simulation because they are clocked slower than wishbone and ack is to short
+        # FIXME: using simple CRG as the clock divider causes problems when
+        # writing registers from within the simulation because they are clocked
+        # slower than wishbone and ack is to short
         self.submodules.crg = CRG(clk=clk, rst=rst)
 
         # clocks for host simulator
@@ -102,9 +101,10 @@ def generate_csr_csv(soc):
                 name=obj._ram_area, origin=obj.base_address, size=obj.size)
         if isinstance(obj, FX2CSRBank):
             for adr, csr in obj._csrs.items():
-                csv += 'csr_register,{name},0x{adr:04x},{size:d},{access}\n'.format(
-                    name=csr.name, adr=adr, size=1,
-                    access="ro" if isinstance(csr, CSRStatus) else "rw")
+                fmt = 'csr_register,{name},0x{adr:04x},{size:d},{access}\n'
+                access = "ro" if isinstance(csr, CSRStatus) else "rw"
+                csv += fmt.format(name=csr.name, adr=adr, size=1,
+                                  access=access)
     return csv
 
 
@@ -114,7 +114,8 @@ def generate(code):
     config = SimConfig(default_clk='clk48')
 
     build_dir = os.path.join('build', 'gateware')
-    vns = platform.build(soc, sim_config=config, build=True, run=False, trace=True, build_dir=build_dir)
+    vns = platform.build(soc, sim_config=config, build=True, run=False,
+                         trace=True, build_dir=build_dir)
 
     with open('csr.csv', 'w') as f:
         f.write(generate_csr_csv(soc))
@@ -137,7 +138,7 @@ def main():
     generate(code)
 
     print("""Simulation build complete.  Output files:
-    build/gateware/dut.v               Source Verilog file. Run this under Cocotb.
+    build/gateware/dut.v            Source Verilog file. Run this under Cocotb.
 """)
 
 
