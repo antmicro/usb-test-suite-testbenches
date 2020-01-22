@@ -1,6 +1,9 @@
 # assuming fx2-sim has been cloned to ..
-FX2_SIM_DIR = ../fx2-sim
+FX2_SIM_DIR ?= $(WPWD)/../fx2-sim
 PYTHONPATH = ../litex:$(FX2_SIM_DIR)
+# assuming sdcc toolchain is in ..
+SDCC_DIR ?= $(WPWD)/../sdcc-3.9.0
+export PATH := $(SDCC_DIR)/bin/:$(PATH)
 
 # add all the required Verilog sources
 COMPILE_ARGS += -I $(FX2_SIM_DIR)/fx2/verilog/rtl/8051/ \
@@ -41,7 +44,7 @@ TARGET_OPTIONS = --code $(FX2_SIM_DIR)/firmware/$(FX2_FIRMWARE)
 fx2-firmware:
 	$(MAKE) -C $(FX2_SIM_DIR)/firmware TARGET=main
 
-sim: $(PWD)/dut.v
+sim: $(WPWD)/dut.v
 	cp build/gateware/mem*.init .
 	rm -f results.xml
 	make results.xml
