@@ -54,6 +54,29 @@ def test_control_transfer_in(dut):
     yield harness.control_transfer_in(
         DEVICE_ADDRESS,
         getDescriptorRequest(descriptor_type=Descriptor.Types.DEVICE,
+                             descriptor_index=0,
+                             lang_id=0,
+                             length=18), model.deviceDescriptor.get())
+
+
+@cocotb.test(expect_fail=True)
+def test_invalid_request(dut):
+    """Request invalid descriptor (Device with index 1)"""
+    harness = get_harness(dut)
+    harness.max_packet_size = model.deviceDescriptor.bMaxPacketSize0
+    yield harness.reset()
+    yield harness.wait(1e3, units="us")
+
+    yield harness.port_reset(10e3)
+    yield harness.connect()
+    yield harness.wait(1e3, units="us")
+    # After waiting (bus inactivity) let's start with SOF
+    yield harness.host_send_sof(0x01)
+    DEVICE_ADDRESS = 20
+    yield harness.set_device_address(DEVICE_ADDRESS)
+    yield harness.control_transfer_in(
+        DEVICE_ADDRESS,
+        getDescriptorRequest(descriptor_type=Descriptor.Types.DEVICE,
                              descriptor_index=1,
                              lang_id=0,
                              length=18), model.deviceDescriptor.get())
