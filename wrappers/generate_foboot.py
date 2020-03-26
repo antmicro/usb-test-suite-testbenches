@@ -127,15 +127,15 @@ class BaseSoC(SoCCore):
         self.submodules.crg = _CRG(platform)
         output_dir = kwargs.get("output_dir", "build")
         kwargs['cpu_reset_address'] = 0x0
+        kwargs['integrated_rom_size'] = 0x0008000
+        kwargs['integrated_sram_size'] = 0x0008000
+        kwargs['with_uart'] = False
 
         self.output_dir = output_dir
 
         SoCCore.__init__(self,
                          platform,
                          clk_freq=clk_freq,
-                         integrated_sram_size=0x8000,
-                         integrated_rom_size=0x8000,
-                         with_uart=False,
                          **kwargs)
         # Add USB pads
         usb_pads = platform.request("usb")

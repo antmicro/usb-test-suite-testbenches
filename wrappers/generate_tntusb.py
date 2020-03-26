@@ -95,6 +95,8 @@ class BaseSoC(SoCCore):
         "rom":  0x00010000,  # (default shadow @0x80000000)
         "sram": 0x00020000,  # (default shadow @0xa0000000)
         "main_ram": 0x00000000,  # (default shadow @0xc0000000)
+        "ipcore_bus_if": 0x84000000,
+        "ipcore_ep_if": 0x85000000,
         "csr": 0xe0000000,
     }
 
@@ -108,6 +110,10 @@ class BaseSoC(SoCCore):
                  output_dir="build",
                  **kwargs):
         kwargs['cpu_reset_address'] = 0x0
+        kwargs['integrated_rom_size'] = 0x000c000
+        kwargs['integrated_sram_size'] = 0x0004000
+        kwargs['integrated_main_ram_size'] = 0x0400
+        kwargs['with_uart'] = True
 
         self.output_dir = output_dir
 
@@ -117,10 +123,6 @@ class BaseSoC(SoCCore):
         SoCCore.__init__(self,
                          platform,
                          clk_freq,
-                         integrated_rom_size=0x000c000,
-                         integrated_sram_size=0x0004000,
-                         integrated_main_ram_size=0x0400,
-                         with_uart=True,
                          **kwargs)
 
         # Modify stack address for FW
@@ -130,11 +132,19 @@ class BaseSoC(SoCCore):
 
         # USB IP core bus interface (wb[4] in riscv project)
         self.wb_ub = wishbone.Interface()
-        self.add_wb_slave(0x84000000, self.wb_ub, 1 << 16)
+        self.add_memory_region("ipcore_bus_if",
+                               self.mem_map["ipcore_bus_if"],
+                               1 << 16,
+                               "io")
+        self.add_wb_slave(self.mem_map["ipcore_bus_if"], self.wb_ub, 1 << 16)
 
         # USB IP core Endpoint interface (wb[5] in riscv project)
         self.wb_ep = wishbone.Interface()
-        self.add_wb_slave(0x85000000, self.wb_ep, 1 << 16)
+        self.add_memory_region("ipcore_ep_if",
+                               self.mem_map["ipcore_ep_if"],
+                               1 << 16,
+                               "io")
+        self.add_wb_slave(self.mem_map["ipcore_ep_if"], self.wb_ep, 1 << 16)
 
         # USB Core
         #         EP Buffer
