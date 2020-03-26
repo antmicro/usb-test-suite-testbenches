@@ -7,6 +7,7 @@ from litex.build.sim.platform import SimPlatform
 from litex.build.generic_platform import Pins, Subsignal
 from litex.soc.integration.soc_core import SoCCore
 from litex.soc.integration.builder import Builder
+from litex.soc.interconnect import wishbone
 
 from valentyusb.usbcore import io as usbio
 from valentyusb.usbcore.cpu import dummyusb, eptri, epfifo
@@ -15,13 +16,18 @@ import argparse
 
 _io = [
     # Wishbone
-    ("wishbone", 0, Subsignal("adr", Pins(30)), Subsignal("dat_r", Pins(32)),
-     Subsignal("dat_w",
-               Pins(32)), Subsignal("sel", Pins(4)), Subsignal("cyc", Pins(1)),
-     Subsignal("stb", Pins(1)), Subsignal("ack",
-                                          Pins(1)), Subsignal("we", Pins(1)),
-     Subsignal("cti", Pins(3)), Subsignal("bte",
-                                          Pins(2)), Subsignal("err", Pins(1))),
+    ("wishbone", 0,
+        Subsignal("adr",   Pins(30)),
+        Subsignal("dat_r", Pins(32)),
+        Subsignal("dat_w", Pins(32)),
+        Subsignal("sel",   Pins(4)),
+        Subsignal("cyc",   Pins(1)),
+        Subsignal("stb",   Pins(1)),
+        Subsignal("ack",   Pins(1)),
+        Subsignal("we",    Pins(1)),
+        Subsignal("cti",   Pins(3)),
+        Subsignal("bte",   Pins(2)),
+        Subsignal("err",   Pins(1))),
     (
         "usb",
         0,
@@ -85,6 +91,16 @@ class Platform(SimPlatform):
 
     def create_programmer(self):
         raise ValueError("programming is not supported")
+
+
+def copy_layout_directions(source, target):
+    # update target.layout direction values from source.layout
+    # as _io does not provide them
+    for i, (name, width) in enumerate(target.layout):
+        found = list(filter(lambda entry: entry[0] == name, source.layout))
+        assert len(found) == 1, 'Layout element not found in source: ' + name
+        direction = found[0][2]
+        target.layout[i] = (name, width, direction)
 
 
 class BaseSoC(SoCCore):
@@ -165,9 +181,14 @@ class BaseSoC(SoCCore):
             def __init__(self, interface):
                 self.wishbone = interface
 
-        self.submodules.bridge = _WishboneBridge(
-                self.platform.request("wishbone"))
-        self.add_wb_master(self.bridge.wishbone)
+        # expose wishbone master for simulation purpose
+        sim_wishbone = wishbone.Interface()
+
+        # connect wishbone to io pins
+        wb = self.platform.request('wishbone')
+        copy_layout_directions(source=sim_wishbone, target=wb)
+        self.comb += wb.connect(sim_wishbone)
+        self.add_wb_master(sim_wishbone)
 
 
 def add_fsm_state_names():
