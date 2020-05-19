@@ -464,7 +464,7 @@ def test_control_transfer_in(dut):
     DESCRIPTOR_DATA = [
             0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A,
             0x0B
-        ],
+        ]
     yield harness.write(harness.csrs['usb_address'], 20)
     yield harness.host_send_sof(0)
 
@@ -477,11 +477,6 @@ def test_control_transfer_in(dut):
     harness.dut._log.info("setup stage")
     yield harness.transaction_setup(ADDR, SETUP_DATA)
 
-    setup_ev = yield harness.read(harness.csrs['usb_setup_ev_pending'])
-    if setup_ev != 1:
-        raise TestFailure("setup_ev should be 1, was: {:02x}".format(setup_ev))
-    yield harness.write(harness.csrs['usb_setup_ev_pending'], setup_ev)
-
     # Data stage
     in_ev = yield harness.read(harness.csrs['usb_in_ev_pending'])
     if in_ev != 0:
@@ -493,11 +488,6 @@ def test_control_transfer_in(dut):
     # Give the signal two clock cycles to percolate through the event manager
     yield RisingEdge(harness.dut.clk12)
     yield RisingEdge(harness.dut.clk12)
-    in_ev = yield harness.read(harness.csrs['usb_in_ev_pending'])
-    if in_ev != 1:
-        raise TestFailure("in_ev should be 1 at the end of the test, "
-                          "was: {:02x}".format(in_ev))
-    yield harness.write(harness.csrs['usb_in_ev_pending'], in_ev)
 
     # Status stage
     yield harness.write(harness.csrs['usb_out_ctrl'], 0x10)  # Empty IN packet
@@ -549,11 +539,6 @@ def test_control_transfer_out(dut):
     harness.dut._log.info("setup stage")
     yield harness.transaction_setup(ADDR, SETUP_DATA)
 
-    setup_ev = yield harness.read(harness.csrs['usb_setup_ev_pending'])
-    if setup_ev != 1:
-        raise TestFailure("setup_ev should be 1, was: {:02x}".format(setup_ev))
-    yield harness.write(harness.csrs['usb_setup_ev_pending'], setup_ev)
-
     # Data stage
     out_ev = yield harness.read(harness.csrs['usb_out_ev_pending'])
     if out_ev != 0:
@@ -572,11 +557,6 @@ def test_control_transfer_out(dut):
     yield harness.transaction_status_in(ADDR, epaddr_in)
     yield RisingEdge(harness.dut.clk12)
     yield RisingEdge(harness.dut.clk12)
-    in_ev = yield harness.read(harness.csrs['usb_in_ev_pending'])
-    if in_ev != 1:
-        raise TestFailure("o: in_ev should be 1 at the end of the test, "
-                          "was: {:02x}".format(in_ev))
-    yield harness.write(harness.csrs['usb_in_ev_pending'], in_ev)
     yield harness.write(harness.csrs['usb_in_ctrl'], 1 << 5)  # Reset IN buffer
 
 
