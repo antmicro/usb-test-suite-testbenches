@@ -714,7 +714,7 @@ def test_in_transfer(dut):
     yield harness.reset()
     yield harness.connect()
 
-    addr = 28
+    addr = 0
     epaddr = EndpointType.epaddr(1, EndpointType.IN)
     yield harness.write(harness.csrs['usb_address'], addr)
 
@@ -725,18 +725,17 @@ def test_in_transfer(dut):
 
     yield harness.set_data(epaddr, d[:4])
     yield harness.set_response(epaddr, EndpointResponse.ACK)
-    yield harness.host_send_token_packet(PID.IN, addr, epaddr)
+    yield harness.host_send_token_packet(PID.IN, addr, EndpointType.epnum(epaddr))
     yield harness.host_expect_data_packet(PID.DATA0, d[:4])
     yield harness.host_send_ack()
 
     pending = yield harness.pending(epaddr)
     if pending:
         raise TestFailure("data was still pending")
-    yield harness.clear_pending(epaddr)
     yield harness.set_data(epaddr, d[4:])
     yield harness.set_response(epaddr, EndpointResponse.ACK)
 
-    yield harness.host_send_token_packet(PID.IN, addr, epaddr)
+    yield harness.host_send_token_packet(PID.IN, addr, EndpointType.epnum(epaddr))
     yield harness.host_expect_data_packet(PID.DATA1, d[4:])
     yield harness.host_send_ack()
 
