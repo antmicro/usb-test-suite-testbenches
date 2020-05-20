@@ -109,8 +109,7 @@ def test_control_transfer_in_lazy(dut):
     if len(setup_data) != 10:
         raise TestFailure(
             "2. expected setup data to be 10 bytes, but was {} bytes: {}".
-            format(len(setup_data), data, len(setup_data),
-                   len(setup_data) != 10))
+            format(len(setup_data), data))
     # Note: the `out` buffer hasn't been drained yet
 
     yield harness.set_response(epaddr_in, EndpointResponse.ACK)
@@ -725,7 +724,8 @@ def test_in_transfer(dut):
 
     yield harness.set_data(epaddr, d[:4])
     yield harness.set_response(epaddr, EndpointResponse.ACK)
-    yield harness.host_send_token_packet(PID.IN, addr, EndpointType.epnum(epaddr))
+    yield harness.host_send_token_packet(PID.IN, addr,
+                                         EndpointType.epnum(epaddr))
     yield harness.host_expect_data_packet(PID.DATA0, d[:4])
     yield harness.host_send_ack()
 
@@ -735,7 +735,8 @@ def test_in_transfer(dut):
     yield harness.set_data(epaddr, d[4:])
     yield harness.set_response(epaddr, EndpointResponse.ACK)
 
-    yield harness.host_send_token_packet(PID.IN, addr, EndpointType.epnum(epaddr))
+    yield harness.host_send_token_packet(PID.IN, addr,
+                                         EndpointType.epnum(epaddr))
     yield harness.host_expect_data_packet(PID.DATA1, d[4:])
     yield harness.host_send_ack()
 
