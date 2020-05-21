@@ -567,10 +567,9 @@ def test_control_transfer_in_out(dut):
 
     yield harness.clear_pending(EndpointType.epaddr(0, EndpointType.OUT))
     yield harness.clear_pending(EndpointType.epaddr(0, EndpointType.IN))
-    yield harness.write(harness.csrs['usb_address'], 20)
 
     yield harness.control_transfer_in(
-        20,
+        0,
         # Get device descriptor
         [0x80, 0x06, 0x00, 0x01, 0x00, 0x00, 0x40, 00],
         # 18 byte descriptor, max packet size 8 bytes
@@ -581,7 +580,7 @@ def test_control_transfer_in_out(dut):
     )
 
     yield harness.control_transfer_out(
-        20,
+        0,
         # Set address (to 11)
         [0x00, 0x05, 0x0B, 0x00, 0x00, 0x00, 0x00, 0x00],
         # 18 byte descriptor, max packet size 8 bytes
