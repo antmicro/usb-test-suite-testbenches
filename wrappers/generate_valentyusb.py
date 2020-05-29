@@ -41,6 +41,7 @@ _io = [
         0,
         Subsignal("clk48", Pins(1)),
         Subsignal("clk12", Pins(1)),
+        Subsignal("clk100", Pins(1)),
     ),
     ("reset", 0, Pins(1)),
 ]
@@ -49,7 +50,7 @@ _connectors = []
 
 
 class _CRG(Module):
-    def __init__(self, platform):
+    def __init__(self, platform, cdc):
         clk = platform.request("clk")
         rst = platform.request("reset")
 
@@ -71,7 +72,12 @@ class _CRG(Module):
 
         self.comb += clk12.eq(clk12_counter[1])
 
-        self.comb += self.cd_sys.clk.eq(clk12)
+        clk100 = clk.clk100
+        if cdc: # set to true to run with 100 MHz sim
+           self.comb += self.cd_sys.clk.eq(clk100)
+        else:
+           self.comb += self.cd_sys.clk.eq(clk12)
+
         self.comb += self.cd_usb_12.clk.eq(clk12)
 
         self.comb += [
@@ -137,6 +143,7 @@ class BaseSoC(SoCCore):
                  platform,
                  output_dir="build",
                  usb_variant='dummy',
+                 cdc=False,
                  **kwargs):
         # Disable integrated RAM as we'll add it later
         self.integrated_sram_size = 0
@@ -144,7 +151,7 @@ class BaseSoC(SoCCore):
         self.output_dir = output_dir
 
         clk_freq = int(12e6)
-        self.submodules.crg = _CRG(platform)
+        self.submodules.crg = _CRG(platform, cdc=cdc)
 
         SoCCore.__init__(self,
                          platform,
