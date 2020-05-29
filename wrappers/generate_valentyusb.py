@@ -41,7 +41,7 @@ _io = [
         0,
         Subsignal("clk48", Pins(1)),
         Subsignal("clk12", Pins(1)),
-        Subsignal("clk100", Pins(1)),
+        Subsignal("clksys", Pins(1)),
     ),
     ("reset", 0, Pins(1)),
 ]
@@ -72,11 +72,10 @@ class _CRG(Module):
 
         self.comb += clk12.eq(clk12_counter[1])
 
-        clk100 = clk.clk100
-        if cdc: # set to true to run with 100 MHz sim
-           self.comb += self.cd_sys.clk.eq(clk100)
+        if cdc:
+            self.comb += self.cd_sys.clk.eq(clk.clksys)
         else:
-           self.comb += self.cd_sys.clk.eq(clk12)
+            self.comb += self.cd_sys.clk.eq(clk12)
 
         self.comb += self.cd_usb_12.clk.eq(clk12)
 
