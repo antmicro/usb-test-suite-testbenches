@@ -497,6 +497,11 @@ def test_control_transfer_in(dut):
                           "was: {:02x}".format(out_ev))
     yield harness.transaction_status_out(ADDR, epaddr_out)
     yield RisingEdge(harness.dut.clk12)
+
+    # give two cycles to percolate through multiregs and event manager
+    yield RisingEdge(harness.dut.clk12)
+    yield RisingEdge(harness.dut.clk12)
+
     out_ev = yield harness.read(harness.csrs['usb_out_ev_pending'])
     if out_ev != 1:
         raise TestFailure("i: out_ev should be 1 at the end of the test, "
@@ -557,6 +562,8 @@ def test_control_transfer_out(dut):
     yield RisingEdge(harness.dut.clk12)
     yield RisingEdge(harness.dut.clk12)
     yield harness.write(harness.csrs['usb_in_ctrl'], 1 << 5)  # Reset IN buffer
+    yield RisingEdge(harness.dut.clk12)
+    yield RisingEdge(harness.dut.clk12)
 
 
 @cocotb.test()
@@ -719,6 +726,8 @@ def test_in_transfer(dut):
     d = [0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8]
 
     yield harness.clear_pending(epaddr)
+    yield RisingEdge(harness.dut.clk12)
+    yield RisingEdge(harness.dut.clk12)
     yield harness.set_response(epaddr, EndpointResponse.NAK)
 
     yield harness.set_data(epaddr, d[:4])
