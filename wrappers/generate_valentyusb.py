@@ -41,6 +41,7 @@ _io = [
         0,
         Subsignal("clk48", Pins(1)),
         Subsignal("clk12", Pins(1)),
+        Subsignal("clksys", Pins(1)),
     ),
     ("reset", 0, Pins(1)),
 ]
@@ -49,7 +50,7 @@ _connectors = []
 
 
 class _CRG(Module):
-    def __init__(self, platform):
+    def __init__(self, platform, cdc):
         clk = platform.request("clk")
         rst = platform.request("reset")
 
@@ -71,7 +72,11 @@ class _CRG(Module):
 
         self.comb += clk12.eq(clk12_counter[1])
 
-        self.comb += self.cd_sys.clk.eq(clk12)
+        if cdc:
+            self.comb += self.cd_sys.clk.eq(clk.clksys)
+        else:
+            self.comb += self.cd_sys.clk.eq(clk12)
+
         self.comb += self.cd_usb_12.clk.eq(clk12)
 
         self.comb += [
@@ -137,6 +142,7 @@ class BaseSoC(SoCCore):
                  platform,
                  output_dir="build",
                  usb_variant='dummy',
+                 cdc=False,
                  **kwargs):
         # Disable integrated RAM as we'll add it later
         self.integrated_sram_size = 0
@@ -144,7 +150,7 @@ class BaseSoC(SoCCore):
         self.output_dir = output_dir
 
         clk_freq = int(12e6)
-        self.submodules.crg = _CRG(platform)
+        self.submodules.crg = _CRG(platform, cdc=cdc)
 
         SoCCore.__init__(self,
                          platform,
@@ -259,12 +265,13 @@ def add_fsm_state_names():
     fsm.FSM._lower_controls = my_lower_controls
 
 
-def generate(output_dir, csr_csv, variant):
+def generate(output_dir, csr_csv, cdc, variant):
     platform = Platform()
     soc = BaseSoC(platform,
                   usb_variant=variant,
                   cpu_type=None,
                   cpu_variant=None,
+                  cdc=cdc,
                   output_dir=output_dir)
     builder = Builder(soc,
                       output_dir=output_dir,
@@ -291,10 +298,13 @@ def main():
                         metavar='CSR',
                         default='csr.csv',
                         help='csr file (default: %(default)s)')
+    parser.add_argument('--cdc',
+                        action='store_true',
+                        help='Add a fast clock domain to sys for CDC testing')
     args = parser.parse_args()
     add_fsm_state_names()
     output_dir = args.dir
-    generate(output_dir, args.csr, args.variant)
+    generate(output_dir, args.csr, args.cdc, args.variant)
 
     print("""Simulation build complete.  Output files:
     {}/gateware/dut.v               Source Verilog file. Run this under Cocotb.

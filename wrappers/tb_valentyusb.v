@@ -4,6 +4,7 @@ module tb(
 	input clk48_host,
 	input clk48_device,
 	output clk12,
+	input clksys,
 	input reset,
 	inout usb_d_p,
 	inout usb_d_n,
@@ -31,6 +32,7 @@ pulldown(usb_d_p);
 dut dut (
 	.clk_clk48(clk48_device),
 	.clk_clk12(clk12),
+	.clk_clksys(clksys),
 	.reset(reset),
 	.usb_d_p(usb_d_p),
 	.usb_d_n(usb_d_n),
