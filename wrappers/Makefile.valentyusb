@@ -1,3 +1,10 @@
-TARGET_OPTIONS = "eptri"
 PYTHONPATH = ../litex:../valentyusb
 export DUT_CSRS = csr.csv
+
+ifeq ($(CDC),1)
+TARGET_OPTIONS = --cdc eptri
+export TEST_CDC = 1
+else
+TARGET_OPTIONS = eptri
+export TEST_CDC = 0
+endif
