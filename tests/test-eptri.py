@@ -740,6 +740,12 @@ def test_in_transfer(dut):
     pending = yield harness.pending(epaddr)
     if pending:
         raise TestFailure("data was still pending")
+    
+    # need to wait 3 clk12 cycles after packet received for rx packet machine to reset    
+    yield RisingEdge(harness.dut.clk12) 
+    yield RisingEdge(harness.dut.clk12)
+    yield RisingEdge(harness.dut.clk12)
+
     yield harness.set_data(epaddr, d[4:])
     yield harness.set_response(epaddr, EndpointResponse.ACK)
 

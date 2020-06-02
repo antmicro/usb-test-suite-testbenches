@@ -170,7 +170,7 @@ class BaseSoC(SoCCore):
         self.comb += usb_pads.tx_en.eq(usb_iobuf.usb_tx_en)
         if usb_variant == 'eptri':
             self.submodules.usb = eptri.TriEndpointInterface(usb_iobuf,
-                                                             debug=True)
+                                                             debug=True, cdc=True)
         elif usb_variant == 'epfifo':
             self.submodules.usb = epfifo.PerEndpointFifoInterface(usb_iobuf,
                                                                   debug=True)
