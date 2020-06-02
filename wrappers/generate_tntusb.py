@@ -251,7 +251,8 @@ def main():
                       output_dir=output_dir,
                       csr_csv=args.csr,
                       compile_software=False)
-    vns = builder.build(run=False)
+    vns = builder.build(run=False,
+                        build_name="dut")
     soc.do_exit(vns)
 
     print("""Simulation build complete.  Output files:
