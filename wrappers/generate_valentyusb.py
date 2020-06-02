@@ -277,7 +277,7 @@ def generate(output_dir, csr_csv, cdc, variant):
                       output_dir=output_dir,
                       csr_csv=csr_csv,
                       compile_software=False)
-    vns = builder.build(run=False)
+    vns = builder.build(run=False, build_name="dut")
     soc.do_exit(vns)
 
 
