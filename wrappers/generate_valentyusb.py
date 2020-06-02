@@ -176,7 +176,9 @@ class BaseSoC(SoCCore):
             self.submodules.usb = epfifo.PerEndpointFifoInterface(usb_iobuf,
                                                                   debug=True)
         elif usb_variant == 'dummy':
-            self.submodules.usb = dummyusb.DummyUsb(usb_iobuf, debug=True, cdc=cdc)
+            self.submodules.usb = dummyusb.DummyUsb(usb_iobuf,
+                                                    debug=True,
+                                                    cdc=cdc)
         else:
             raise ValueError(
                 'Invalid endpoints value. It is currently \'eptri\'\
