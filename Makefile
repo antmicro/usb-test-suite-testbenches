@@ -52,7 +52,6 @@ MODULE = tests.$(TEST_SCRIPT)
 
 CUSTOM_COMPILE_DEPS = $(PWD)/dut.v
 
-include $(shell cocotb-config --makefiles)/Makefile.inc
 include $(shell cocotb-config --makefiles)/Makefile.sim
 
 PYTHONPATH=../litex:..
