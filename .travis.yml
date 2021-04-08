@@ -13,4 +13,4 @@ jobs:
       install:
         - pip install flake8
       script:
-        - flake8 .
+        - flake8 --max-line-length 80 .
